@@ -253,6 +253,16 @@
     header = document.createElement('div');
     header.className = 'yt-pins-header';
 
+    // Create title section with icon
+    const titleSection = document.createElement('div');
+    titleSection.className = 'title-section';
+    
+    const icon = document.createElement('img');
+    icon.src = chrome.runtime.getURL('icon48.png');
+    icon.alt = 'YTBookmarks';
+    
+    titleSection.append(icon, 'YTBookmarks');
+
     // Clear all button
     const clearAllBtn = document.createElement('button');
     clearAllBtn.textContent = '🗑️';
@@ -267,7 +277,7 @@
     undoBtn.disabled = true;
     undoBtn.addEventListener('click', undoDelete);
 
-    header.append('YTBookmarks', clearAllBtn, undoBtn);
+    header.append(titleSection, clearAllBtn, undoBtn);
     sidebar.appendChild(header);
     listContainer = document.createElement('div');
     listContainer.className = 'yt-pins-list';
@@ -353,8 +363,8 @@
     listContainer.innerHTML = '';
     if (!bookmarks.length) {
       const ph = document.createElement('div');
+      ph.className = 'empty-message';
       ph.textContent = 'No bookmarks yet';
-      ph.style.color = '#888';
       listContainer.appendChild(ph);
       return;
     }

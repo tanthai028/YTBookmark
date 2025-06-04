@@ -44,8 +44,24 @@
   user-select: none;
 }
 
+.yt-pins-header .title-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.yt-pins-header img {
+  width: 16px;
+  height: 16px;
+}
+
 .yt-pins-list {
   padding: 4px 0;
+}
+
+.yt-pins-list .empty-message {
+  color: #888;
+  margin-left: 10px;
 }
 
 .bookmark-entry {
