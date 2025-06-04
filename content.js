@@ -2,7 +2,7 @@
   'use strict';
 
   let video, bookmarks = [];
-  let sidebar, listContainer, header, pinBtn, undoBtn;
+  let sidebar, listContainer, header, pinBtn, undoBtn, settingsBtn;
   let lastDeleted = null;
   let settings = {
     showLabels: true,
@@ -80,6 +80,7 @@
       const updatePinVisibility = () => {
         const progress = video.currentTime / video.duration;
         if (progress >= bm.time / video.duration) {
+          pin.classList.add('played');
           if (settings.showLabels) {
             // When labels are shown, pin extends from progress bar to label
             pin.style.bottom = '0';
@@ -92,8 +93,18 @@
             pin.style.height = '100%';
           }
         } else {
-          // Hide pin when video hasn't reached this point
-          pin.style.height = '0';
+          pin.classList.remove('played');
+          if (settings.showLabels) {
+            // When labels are shown, pin extends from progress bar to label
+            pin.style.bottom = '0';
+            pin.style.height = 'auto';
+            pin.style.top = pin.dataset.labelBottom + 'px';
+          } else {
+            // When labels are hidden, pin only shows in progress bar
+            pin.style.top = 'unset';
+            pin.style.bottom = '0';
+            pin.style.height = '100%';
+          }
         }
       };
 
@@ -263,8 +274,12 @@
     sidebar.appendChild(listContainer);
     document.body.appendChild(sidebar);
 
+    // Create buttons container
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'yt-pins-buttons-container';
+
     // Settings button
-    const settingsBtn = document.createElement('button');
+    settingsBtn = document.createElement('button');
     settingsBtn.className = 'settings-btn';
     settingsBtn.textContent = '⚙️';
     settingsBtn.title = 'Settings';
@@ -306,9 +321,7 @@
       addBookmark();
     });
 
-    // Create container for buttons
-    const buttonsContainer = document.createElement('div');
-    buttonsContainer.className = 'yt-pins-buttons-container';
+    // Add both buttons to container
     buttonsContainer.append(pinBtn, settingsBtn);
 
     // Add container to video controls
@@ -400,7 +413,10 @@
   function destroySidebar() {
     if (sidebar) sidebar.remove();
     if (pinBtn) pinBtn.remove();
-    sidebar = listContainer = header = pinBtn = undoBtn = null;
+    if (document.querySelector('.yt-pins-buttons-container')) {
+      document.querySelector('.yt-pins-buttons-container').remove();
+    }
+    sidebar = listContainer = header = pinBtn = settingsBtn = null;
   }
 
   function initShareUI() {

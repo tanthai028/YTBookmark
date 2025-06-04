@@ -2,9 +2,14 @@
   position: absolute;
   width: 2px;
   bottom: 0;
-  background-color: #00bcd4;
+  background-color: rgba(255, 255, 255, 0.5) !important;
   pointer-events: none;
   z-index: 9998;
+  height: 100%;
+}
+
+.yt-pin.played {
+  background-color: #00bcd4 !important;
 }
 
 .yt-pins-sidebar {
