@@ -24,11 +24,15 @@
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
   z-index: 10000;
 
-  background: rgba(255, 255, 255, 0.8);
-  transition: background 0.2s;
+  background: rgba(255, 255, 255, 0.8) !important;
+  transition: background 0.2s, opacity 0.2s !important;
 
-  opacity: 0.6;
-  transition: opacity 0.2s;
+  opacity: 0.6 !important;
+}
+
+.yt-pins-sidebar:hover {
+  background: rgba(255, 255, 255, 1) !important;
+  opacity: 1 !important;
 }
 
 .yt-pins-header {
@@ -56,12 +60,6 @@
   width: 16px;
   height: 16px;
 }
-
-.yt-pins-sidebar:hover {
-  background: rgba(255, 255, 255, 1);
-  opacity: 1;
-}
-
 
 .yt-pins-list {
   padding: 4px 0;
@@ -142,6 +140,10 @@
   z-index: 10002 !important;
   pointer-events: auto !important;
   margin: 0 4px !important;
+}
+
+.ytp-pin-btn:hover {
+  background: rgba(0, 0, 0, 0.8) !important;
 }
 
 .ytp-pin-label {
@@ -332,4 +334,32 @@
   justify-content: center !important;
   z-index: 10002 !important;
   pointer-events: auto !important;
+}
+
+.visibility-btn {
+  position: relative !important;
+  padding: 4px !important;
+  font-size: 20px !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  z-index: 10002 !important;
+  pointer-events: auto !important;
+  margin: 0 4px !important;
+}
+
+.visibility-btn:hover {
+  background: rgba(0, 0, 0, 0.8) !important;
+}
+
+#yt-pins-share-ui {
+  opacity: 1;
+  transition: opacity 0.3s ease !important;
+}
+
+#yt-pins-share-ui.hidden {
+  opacity: 0;
+  pointer-events: none;
 } 

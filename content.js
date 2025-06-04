@@ -250,6 +250,15 @@
     sidebar = document.createElement('div');
     sidebar.className = 'yt-pins-sidebar';
 
+    // Load visibility state from storage
+    const isVisible = localStorage.getItem('yt-pins-visibility') !== 'hidden';
+    if (!isVisible) {
+      sidebar.classList.add('hidden');
+      if (document.getElementById('yt-pins-share-ui')) {
+        document.getElementById('yt-pins-share-ui').classList.add('hidden');
+      }
+    }
+
     header = document.createElement('div');
     header.className = 'yt-pins-header';
 
@@ -288,12 +297,49 @@
     const buttonsContainer = document.createElement('div');
     buttonsContainer.className = 'yt-pins-buttons-container';
 
+    // Pin button
+    pinBtn = document.createElement('button');
+    pinBtn.className = 'ytp-pin-btn';
+    pinBtn.textContent = '📌';
+    pinBtn.title = 'Add Bookmark';
+    pinBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      addBookmark();
+    });
+
     // Settings button
     settingsBtn = document.createElement('button');
     settingsBtn.className = 'settings-btn';
     settingsBtn.textContent = '⚙️';
     settingsBtn.title = 'Settings';
-    
+
+    // Visibility toggle button
+    const visibilityBtn = document.createElement('button');
+    visibilityBtn.className = 'visibility-btn';
+    visibilityBtn.textContent = isVisible ? '👁️' : '👁️‍🗨️';
+    visibilityBtn.title = isVisible ? 'Hide Sidebar' : 'Show Sidebar';
+    visibilityBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const isCurrentlyVisible = !sidebar.classList.contains('hidden');
+      if (isCurrentlyVisible) {
+        sidebar.classList.add('hidden');
+        if (document.getElementById('yt-pins-share-ui')) {
+          document.getElementById('yt-pins-share-ui').classList.add('hidden');
+        }
+        visibilityBtn.textContent = '👁️‍🗨️';
+        visibilityBtn.title = 'Show Sidebar';
+        localStorage.setItem('yt-pins-visibility', 'hidden');
+      } else {
+        sidebar.classList.remove('hidden');
+        if (document.getElementById('yt-pins-share-ui')) {
+          document.getElementById('yt-pins-share-ui').classList.remove('hidden');
+        }
+        visibilityBtn.textContent = '👁️';
+        visibilityBtn.title = 'Hide Sidebar';
+        localStorage.setItem('yt-pins-visibility', 'visible');
+      }
+    });
+
     // Create settings menu
     const settingsMenu = createSettingsMenu();
     document.body.appendChild(settingsMenu);
@@ -321,18 +367,8 @@
     settingsMenu.addEventListener('mouseenter', () => clearTimeout(hideMenuTimeout));
     settingsMenu.addEventListener('mouseleave', hideMenu);
 
-    // Pin button
-    pinBtn = document.createElement('button');
-    pinBtn.className = 'ytp-pin-btn';
-    pinBtn.textContent = '📌';
-    pinBtn.title = 'Add Bookmark';
-    pinBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      addBookmark();
-    });
-
-    // Add both buttons to container
-    buttonsContainer.append(pinBtn, settingsBtn);
+    // Add all buttons to container
+    buttonsContainer.append(pinBtn, settingsBtn, visibilityBtn);
 
     // Add container to video controls
     const ctrls = document.querySelector('.ytp-chrome-bottom');
