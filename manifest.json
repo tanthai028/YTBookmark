@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "YTBookmarks",
   "version": "2.0",
-  "description": "Enhanced YouTube bookmarking with visual pins on the progress bar, customizable settings, and a draggable sidebar. Features auto-pause, labels, undo support, and bookmark import/export.",
+  "description": "Add visual bookmarks to YouTube videos with customizable pins, labels, and settings. Features auto-pause, undo, and bookmark sharing.",
   "permissions": ["storage", "scripting", "webNavigation"],
   "host_permissions": [
     "*://www.youtube.com/*",
