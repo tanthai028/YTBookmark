@@ -3,7 +3,7 @@
   "name": "YTBookmarks",
   "version": "2.0",
   "description": "Add video bookmarks to YouTube with a draggable sidebar, progress bar pins, and import/export support.",
-  "permissions": ["storage", "scripting"],
+  "permissions": ["storage", "scripting", "webNavigation"],
   "host_permissions": [
     "*://www.youtube.com/*",
     "*://*.youtube.com/*",
@@ -12,12 +12,12 @@
   "content_scripts": [
     {
       "matches": [
-        "*://www.youtube.com/watch*",
-        "*://*.youtube.com/watch*",
+        "*://www.youtube.com/*",
+        "*://*.youtube.com/*",
         "*://youtu.be/*"
       ],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [{

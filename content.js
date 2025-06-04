@@ -17,10 +17,25 @@
   }
 
   // Load external styles
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = chrome.runtime.getURL('styles.css');
-  document.head.appendChild(link);
+  function injectStyles() {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = chrome.runtime.getURL('styles.css');
+    document.head.appendChild(link);
+  }
+
+  // Ensure styles are injected when the document is ready
+  if (document.head) {
+    injectStyles();
+  } else {
+    const observer = new MutationObserver(() => {
+      if (document.head) {
+        injectStyles();
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  }
 
   function formatTime(t) {
     const m = Math.floor(t / 60);
@@ -281,10 +296,6 @@
     settingsMenu.addEventListener('mouseenter', () => clearTimeout(hideMenuTimeout));
     settingsMenu.addEventListener('mouseleave', hideMenu);
 
-    // Add settings button to video controls
-    const ctrls = document.querySelector('.ytp-chrome-bottom');
-    (ctrls || document.body).appendChild(settingsBtn);
-
     // Pin button
     pinBtn = document.createElement('button');
     pinBtn.className = 'ytp-pin-btn';
@@ -294,7 +305,15 @@
       e.stopPropagation();
       addBookmark();
     });
-    (ctrls || document.body).appendChild(pinBtn);
+
+    // Create container for buttons
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'yt-pins-buttons-container';
+    buttonsContainer.append(pinBtn, settingsBtn);
+
+    // Add container to video controls
+    const ctrls = document.querySelector('.ytp-chrome-bottom');
+    (ctrls || document.body).appendChild(buttonsContainer);
 
     // Drag logic
     header.addEventListener('mousedown', e => {
@@ -441,23 +460,61 @@
 
   function initAll() {
     const onWatch = location.pathname === '/watch' && document.querySelector('video');
-    if (!onWatch) return destroySidebar();
-    video = document.querySelector('video');
-    loadBookmarks();
-    renderPins();
-    if (!sidebar) createSidebar();
-    renderSidebar();
-    initShareUI();
+    if (!onWatch) {
+      destroySidebar();
+      return;
+    }
+
+    // Wait for video player to be ready
+    const waitForVideo = () => {
+      video = document.querySelector('video');
+      if (!video || !document.querySelector('.ytp-progress-bar')) {
+        setTimeout(waitForVideo, 100);
+        return;
+      }
+      
+      loadBookmarks();
+      renderPins();
+      if (!sidebar) createSidebar();
+      renderSidebar();
+      initShareUI();
+    };
+    
+    waitForVideo();
   }
 
+  // Handle YouTube's navigation
   let last = location.href;
-  new MutationObserver(() => {
+  const observer = new MutationObserver(() => {
     if (location.href !== last) {
       last = location.href;
-      setTimeout(initAll, 500);
+      if (location.pathname === '/watch') {
+        setTimeout(initAll, 100);
+      } else {
+        destroySidebar();
+      }
     }
-  }).observe(document, { childList: true, subtree: true });
+  });
 
-  window.addEventListener('yt-navigate-finish', initAll);
-  initAll();
+  // Start observing as early as possible
+  if (document.body) {
+    observer.observe(document, { childList: true, subtree: true });
+    initAll();
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      observer.observe(document, { childList: true, subtree: true });
+      initAll();
+    });
+  }
+
+  // Handle YouTube's custom navigation events
+  window.addEventListener('yt-navigate-start', () => {
+    destroySidebar();
+  });
+
+  window.addEventListener('yt-navigate-finish', () => {
+    if (location.pathname === '/watch') {
+      setTimeout(initAll, 100);
+    }
+  });
 })();

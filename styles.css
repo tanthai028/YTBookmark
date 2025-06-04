@@ -101,10 +101,7 @@
 }
 
 .ytp-pin-btn {
-  position: absolute !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  bottom: 6px !important;
+  position: relative !important;
   padding: 4px !important;
   font-size: 20px !important;
   background: rgba(0, 0, 0, 0.6) !important;
@@ -114,6 +111,7 @@
   cursor: pointer !important;
   z-index: 10002 !important;
   pointer-events: auto !important;
+  margin: 0 4px !important;
 }
 
 .ytp-pin-label {
@@ -163,10 +161,7 @@
 }
 
 .settings-btn {
-  position: absolute !important;
-  left: calc(50% + 36.5px) !important;
-  transform: translateX(-50%) !important;
-  bottom: 6px !important;
+  position: relative !important;
   padding: 4px !important;
   font-size: 20px !important;
   background: rgba(0, 0, 0, 0.6) !important;
@@ -176,6 +171,7 @@
   cursor: pointer !important;
   z-index: 10002 !important;
   pointer-events: auto !important;
+  margin: 0 4px !important;
 }
 
 .settings-btn:hover {
@@ -293,4 +289,16 @@
 .clear-all-btn:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.yt-pins-buttons-container {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  bottom: 6px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10002 !important;
+  pointer-events: auto !important;
 } 
