@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Bookmark Pins",
+  "version": "1.1",
+  "description": "Add timestamp pins to YouTube’s progress bar",
+  "icons": { "48": "icon48.png" },
+  "content_scripts": [{
+    "matches": ["*://*.youtube.com/watch*","*://youtu.be/*"],
+    "js": ["content.min.js"],
+    "run_at": "document_idle"
+  }]
+}
