@@ -1,15 +1,3 @@
-// ==UserScript==
-// @name         YouTube Bookmark Pins with Sidebar (v2.4+share+undo)
-// @namespace    http://tampermonkey.net/
-// @version      2.4.1
-// @description  Draggable sidebar + exact pins on full progress bar; add-pin button centered; export/import highlights with custom filename; undo delete; only on /watch pages.
-// @match        *://www.youtube.com/watch*
-// @match        *://*.youtube.com/watch*
-// @match        *://youtu.be/*
-// @run-at       document-idle
-// @grant        none
-// ==/UserScript==
-
 (function() {
   'use strict';
 
@@ -17,158 +5,11 @@
   let sidebar, listContainer, header, pinBtn, undoBtn;
   let lastDeleted = null;
 
-  // inject styles
-  const style = document.createElement('style');
-  style.textContent = `
-    .yt-pin {
-      position: absolute;
-      width: 2px;
-      bottom: 0;
-      background-color: #00bcd4;
-      pointer-events: none;
-      z-index: 9998;
-    }
-    .yt-pins-sidebar {
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      width: 220px;
-      max-height: 60vh;
-      padding: 8px;
-      overflow-y: auto;
-      overflow-x: hidden;
-      background: #fff;
-      color: #1a1a1a;
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      border-radius: 12px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-      z-index: 10000;
-    }
-    .yt-pins-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 6px 8px;
-      margin-bottom: 6px;
-      background: #f3f3f3;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: move;
-      user-select: none;
-    }
-    .yt-pins-list {
-      padding: 4px 0;
-    }
-    .bookmark-entry {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 4px 6px;
-      margin-bottom: 4px;
-      background: #f9f9f9;
-      border-radius: 8px;
-      transition: background 0.2s;
-      min-width: 0;
-    }
-    .bookmark-entry:hover {
-      background: #eee;
-    }
-    .bookmark-input {
-      flex: 1;
-      margin-right: 6px;
-      padding: 4px 6px;
-      border: 1px solid transparent;
-      border-radius: 6px;
-      font-size: 13px;
-      background: #fff;
-      min-width: 0;
-    }
-    .bookmark-input:focus {
-      outline: none;
-      border-color: #065fd4;
-      background: #eef5ff;
-    }
-    .bookmark-time {
-      white-space: nowrap;
-      padding: 2px 4px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #065fd4;
-      background: #eee;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .delete-btn {
-      background: none;
-      border: none;
-      color: #ff4d4f;
-      font-size: 14px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .delete-btn:hover {
-      transform: scale(1.1);
-    }
-    .ytp-pin-btn {
-      position: absolute !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      bottom: 6px !important;
-      padding: 4px !important;
-      font-size: 20px !important;
-      background: rgba(0, 0, 0, 0.6) !important;
-      color: #fff !important;
-      border: none !important;
-      border-radius: 50% !important;
-      cursor: pointer !important;
-      z-index: 10002 !important;
-      pointer-events: auto !important;
-    }
-    .ytp-pin-label {
-      position: absolute;
-      top: -18px;
-      transform: translateX(-50%);
-      padding: 2px 4px;
-      font-size: 10px;
-      color: #fff;
-      background: rgba(0, 0, 0, 0.75);
-      border-radius: 4px;
-      white-space: nowrap;
-      pointer-events: none;
-      z-index: 10000;
-    }
-    #yt-pins-share-ui button {
-      padding: 4px 6px;
-      font-size: 12px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #065fd4;
-      color: #fff;
-      transition: background 0.2s;
-    }
-    #yt-pins-share-ui button:hover {
-      background: #054cb2;
-    }
-    .undo-btn {
-      margin-left: 4px;
-      padding: 2px 6px;
-      font-size: 12px;
-      font-weight: 600;
-      background: #ffeaea;
-      color: #d32f2f;
-      border: 1px solid #f77;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .undo-btn:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
-  `;
-  document.head.appendChild(style);
+  // Load external styles
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = chrome.runtime.getURL('styles.css');
+  document.head.appendChild(link);
 
   function formatTime(t) {
     const m = Math.floor(t / 60);
@@ -231,8 +72,12 @@
 
   function addBookmark() {
     if (!video) return;
+    video.pause(); // Pause the video when adding a bookmark
     const input = prompt('Enter label:', 'Bookmark');
-    if (typeof input !== 'string') return;
+    if (typeof input !== 'string') {
+      video.play(); // Resume playback if user cancels the prompt
+      return;
+    }
     const label = input.trim() || 'Bookmark';
     bookmarks.push({ time: video.currentTime, label });
     saveBookmarks();
