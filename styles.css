@@ -2,14 +2,10 @@
   position: absolute;
   width: 2px;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.5) !important;
+  background-color: #00bcd4 !important;
   pointer-events: none;
   z-index: 9998;
   height: 100%;
-}
-
-.yt-pin.played {
-  background-color: #00bcd4 !important;
 }
 
 .yt-pins-sidebar {
@@ -18,25 +14,29 @@
   right: 20px;
   width: 220px;
   max-height: 60vh;
-  padding: 8px;
+  padding: 4px 6px;
   overflow-y: auto;
   overflow-x: hidden;
-  background: #fff;
   color: #1a1a1a;
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   border-radius: 12px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
   z-index: 10000;
+
+  background: rgba(255, 255, 255, 0.8);
+  transition: background 0.2s;
+
+  opacity: 0.6;
+  transition: opacity 0.2s;
 }
 
 .yt-pins-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 8px;
-  margin-bottom: 6px;
-  background: #f3f3f3;
+  padding: 8px 4px;
+  margin-top: 4px;
   border-radius: 8px;
   font-weight: 600;
   font-size: 14px;
@@ -48,12 +48,20 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  border-radius: 6px;
+
 }
 
 .yt-pins-header img {
   width: 16px;
   height: 16px;
 }
+
+.yt-pins-sidebar:hover {
+  background: rgba(255, 255, 255, 1);
+  opacity: 1;
+}
+
 
 .yt-pins-list {
   padding: 4px 0;
@@ -62,22 +70,23 @@
 .yt-pins-list .empty-message {
   color: #888;
   margin-left: 10px;
+  padding: 4px 0px;
 }
 
 .bookmark-entry {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 6px;
+  padding: 4px 4px;
   margin-bottom: 4px;
-  background: #f9f9f9;
+  background: rgba(249, 249, 249, 0.8);
   border-radius: 8px;
   transition: background 0.2s;
   min-width: 0;
 }
 
 .bookmark-entry:hover {
-  background: #eee;
+  background: rgba(238, 238, 238, 0.9);
 }
 
 .bookmark-input {
@@ -87,7 +96,7 @@
   border: 1px solid transparent;
   border-radius: 6px;
   font-size: 13px;
-  background: #fff;
+  background: rgba(255, 255, 255, 1);
   min-width: 0;
 }
 
@@ -103,7 +112,7 @@
   font-size: 12px;
   font-weight: 600;
   color: #065fd4;
-  background: #eee;
+  background: rgba(255, 255, 255, 1);;
   border-radius: 6px;
   cursor: pointer;
 }
@@ -165,8 +174,7 @@
 }
 
 .undo-btn {
-  margin-left: 4px;
-  padding: 2px 6px;
+  padding: 1px 3px;
   font-size: 12px;
   font-weight: 600;
   background: #ffeaea;
@@ -298,9 +306,11 @@
   font-size: 14px;
   cursor: pointer;
   padding: 1px 3px;
-  margin: 0 4px;
   border-radius: 4px;
   transition: background-color 0.2s;
+
+  opacity: 0.6;
+  transition: opacity 0.2s;
 }
 
 .clear-all-btn:hover {

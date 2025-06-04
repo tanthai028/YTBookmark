@@ -14,7 +14,7 @@
   const savedSettings = localStorage.getItem('yt-pins-settings');
   if (savedSettings) {
     settings = { ...settings, ...JSON.parse(savedSettings) };
-  }
+    }
 
   // Load external styles
   function injectStyles() {
@@ -32,7 +32,7 @@
       if (document.head) {
         injectStyles();
         observer.disconnect();
-      }
+    }
     });
     observer.observe(document.documentElement, { childList: true, subtree: true });
   }
@@ -112,26 +112,26 @@
       bar.appendChild(pin);
 
       if (settings.showLabels) {
-        const lbl = document.createElement('div');
-        lbl.className = 'ytp-pin-label';
-        lbl.style.left = pct;
-        lbl.textContent = bm.label;
-        bar.appendChild(lbl);
+      const lbl = document.createElement('div');
+      lbl.className = 'ytp-pin-label';
+      lbl.style.left = pct;
+      lbl.textContent = bm.label;
+      bar.appendChild(lbl);
 
-        const lblW = lbl.offsetWidth;
-        const lblH = lbl.offsetHeight;
-        let lvl = 0;
-        for (const p of placed) {
-          if (Math.abs(leftPx - p.left) < (lblW + p.width) / 2) {
-            lvl = Math.max(lvl, p.level + 1);
-          }
+      const lblW = lbl.offsetWidth;
+      const lblH = lbl.offsetHeight;
+      let lvl = 0;
+      for (const p of placed) {
+        if (Math.abs(leftPx - p.left) < (lblW + p.width) / 2) {
+          lvl = Math.max(lvl, p.level + 1);
         }
-        const base = -18;
-        const gap = lblH + 2;
-        lbl.style.top = base - lvl * gap + 'px';
+      }
+      const base = -18;
+      const gap = lblH + 2;
+      lbl.style.top = base - lvl * gap + 'px';
         // Store the label's bottom position for the pin
         pin.dataset.labelBottom = lbl.offsetTop + lbl.offsetHeight;
-        placed.push({ left: leftPx, width: lblW, level: lvl });
+      placed.push({ left: leftPx, width: lblW, level: lvl });
       }
 
       updatePinVisibility();
@@ -147,7 +147,7 @@
 
     let label = 'Bookmark';
     if (settings.showPrompt) {
-      const input = prompt('Enter label:', 'Bookmark');
+    const input = prompt('Enter label:', 'Bookmark');
       if (typeof input !== 'string') {
         if (settings.autoPause) video.play();
         return;
@@ -193,7 +193,7 @@
     if (lastDeleted.type === 'clear-all') {
       bookmarks = [...lastDeleted.bookmarks];
     } else {
-      bookmarks.splice(lastDeleted.index, 0, lastDeleted.bookmark);
+    bookmarks.splice(lastDeleted.index, 0, lastDeleted.bookmark);
     }
     saveBookmarks();
     renderPins();
@@ -493,17 +493,17 @@
 
     // Wait for video player to be ready
     const waitForVideo = () => {
-      video = document.querySelector('video');
+    video = document.querySelector('video');
       if (!video || !document.querySelector('.ytp-progress-bar')) {
         setTimeout(waitForVideo, 100);
         return;
       }
       
-      loadBookmarks();
-      renderPins();
-      if (!sidebar) createSidebar();
-      renderSidebar();
-      initShareUI();
+    loadBookmarks();
+    renderPins();
+    if (!sidebar) createSidebar();
+    renderSidebar();
+    initShareUI();
     };
     
     waitForVideo();
@@ -529,7 +529,7 @@
   } else {
     document.addEventListener('DOMContentLoaded', () => {
       observer.observe(document, { childList: true, subtree: true });
-      initAll();
+  initAll();
     });
   }
 
