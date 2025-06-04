@@ -4,6 +4,17 @@
   let video, bookmarks = [];
   let sidebar, listContainer, header, pinBtn, undoBtn;
   let lastDeleted = null;
+  let settings = {
+    showLabels: true,
+    autoPause: true,
+    showPrompt: true
+  };
+
+  // Load settings from storage
+  const savedSettings = localStorage.getItem('yt-pins-settings');
+  if (savedSettings) {
+    settings = { ...settings, ...JSON.parse(savedSettings) };
+  }
 
   // Load external styles
   const link = document.createElement('link');
@@ -30,6 +41,10 @@
     localStorage.setItem(`yt-pins-${getVideoId()}`, JSON.stringify(bookmarks));
   }
 
+  function saveSettings() {
+    localStorage.setItem('yt-pins-settings', JSON.stringify(settings));
+  }
+
   function renderPins() {
     const bar = document.querySelector('.ytp-progress-bar');
     if (!bar || !video) return;
@@ -45,40 +60,79 @@
       const pin = document.createElement('div');
       pin.className = 'yt-pin';
       pin.style.left = pct;
+
+      // Make pin follow the played portion of the video
+      const updatePinVisibility = () => {
+        const progress = video.currentTime / video.duration;
+        if (progress >= bm.time / video.duration) {
+          if (settings.showLabels) {
+            // When labels are shown, pin extends from progress bar to label
+            pin.style.bottom = '0';
+            pin.style.height = 'auto';
+            pin.style.top = pin.dataset.labelBottom + 'px';
+          } else {
+            // When labels are hidden, pin only shows in progress bar
+            pin.style.top = 'unset';
+            pin.style.bottom = '0';
+            pin.style.height = '100%';
+          }
+        } else {
+          // Hide pin when video hasn't reached this point
+          pin.style.height = '0';
+        }
+      };
+
+      video.addEventListener('timeupdate', updatePinVisibility);
       bar.appendChild(pin);
 
-      const lbl = document.createElement('div');
-      lbl.className = 'ytp-pin-label';
-      lbl.style.left = pct;
-      lbl.textContent = bm.label;
-      bar.appendChild(lbl);
+      if (settings.showLabels) {
+        const lbl = document.createElement('div');
+        lbl.className = 'ytp-pin-label';
+        lbl.style.left = pct;
+        lbl.textContent = bm.label;
+        bar.appendChild(lbl);
 
-      const lblW = lbl.offsetWidth;
-      const lblH = lbl.offsetHeight;
-      let lvl = 0;
-      for (const p of placed) {
-        if (Math.abs(leftPx - p.left) < (lblW + p.width) / 2) {
-          lvl = Math.max(lvl, p.level + 1);
+        const lblW = lbl.offsetWidth;
+        const lblH = lbl.offsetHeight;
+        let lvl = 0;
+        for (const p of placed) {
+          if (Math.abs(leftPx - p.left) < (lblW + p.width) / 2) {
+            lvl = Math.max(lvl, p.level + 1);
+          }
         }
+        const base = -18;
+        const gap = lblH + 2;
+        lbl.style.top = base - lvl * gap + 'px';
+        // Store the label's bottom position for the pin
+        pin.dataset.labelBottom = lbl.offsetTop + lbl.offsetHeight;
+        placed.push({ left: leftPx, width: lblW, level: lvl });
       }
-      const base = -18;
-      const gap = lblH + 2;
-      lbl.style.top = base - lvl * gap + 'px';
-      pin.style.top = lbl.offsetTop + lbl.offsetHeight + 'px';
-      pin.style.bottom = '0px';
-      placed.push({ left: leftPx, width: lblW, level: lvl });
+
+      updatePinVisibility();
     });
   }
 
   function addBookmark() {
     if (!video) return;
-    video.pause(); // Pause the video when adding a bookmark
-    const input = prompt('Enter label:', 'Bookmark');
-    if (typeof input !== 'string') {
-      video.play(); // Resume playback if user cancels the prompt
-      return;
+    
+    if (settings.autoPause) {
+      video.pause();
     }
-    const label = input.trim() || 'Bookmark';
+
+    let label = 'Bookmark';
+    if (settings.showPrompt) {
+      const input = prompt('Enter label:', 'Bookmark');
+      if (typeof input !== 'string') {
+        if (settings.autoPause) video.play();
+        return;
+      }
+      label = input.trim() || 'Bookmark';
+      // Auto-resume if both auto-pause and prompt are enabled
+      if (settings.autoPause && settings.showPrompt) {
+        video.play();
+      }
+    }
+
     bookmarks.push({ time: video.currentTime, label });
     saveBookmarks();
     renderPins();
@@ -87,8 +141,20 @@
     updateUndoButton();
   }
 
+  function clearAllBookmarks() {
+    if (!bookmarks.length) return;
+    if (confirm('Are you sure you want to delete all bookmarks?')) {
+      lastDeleted = { bookmarks: [...bookmarks], type: 'clear-all' };
+      bookmarks = [];
+      saveBookmarks();
+      renderPins();
+      renderSidebar();
+      updateUndoButton();
+    }
+  }
+
   function deleteBookmark(i) {
-    lastDeleted = { bookmark: bookmarks[i], index: i };
+    lastDeleted = { bookmark: bookmarks[i], index: i, type: 'single' };
     bookmarks.splice(i, 1);
     saveBookmarks();
     renderPins();
@@ -98,7 +164,11 @@
 
   function undoDelete() {
     if (!lastDeleted) return;
-    bookmarks.splice(lastDeleted.index, 0, lastDeleted.bookmark);
+    if (lastDeleted.type === 'clear-all') {
+      bookmarks = [...lastDeleted.bookmarks];
+    } else {
+      bookmarks.splice(lastDeleted.index, 0, lastDeleted.bookmark);
+    }
     saveBookmarks();
     renderPins();
     renderSidebar();
@@ -110,13 +180,59 @@
     if (undoBtn) undoBtn.disabled = !lastDeleted;
   }
 
+  function createSettingsMenu() {
+    const menu = document.createElement('div');
+    menu.className = 'settings-menu';
+
+    const createToggle = (text, key) => {
+      const item = document.createElement('div');
+      item.className = 'settings-menu-item';
+      
+      const label = document.createElement('span');
+      label.textContent = text;
+      
+      const toggle = document.createElement('label');
+      toggle.className = 'toggle-switch';
+      
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.checked = settings[key];
+      input.addEventListener('change', () => {
+        settings[key] = input.checked;
+        saveSettings();
+        renderPins();
+      });
+      
+      const slider = document.createElement('span');
+      slider.className = 'toggle-slider';
+      
+      toggle.append(input, slider);
+      item.append(label, toggle);
+      return item;
+    };
+
+    menu.append(
+      createToggle('Show Labels', 'showLabels'),
+      createToggle('Auto-Pause on Bookmark', 'autoPause'),
+      createToggle('Show Bookmark Prompt', 'showPrompt')
+    );
+
+    return menu;
+  }
+
   function createSidebar() {
     sidebar = document.createElement('div');
     sidebar.className = 'yt-pins-sidebar';
 
     header = document.createElement('div');
     header.className = 'yt-pins-header';
-    header.textContent = 'YTBookmarks';
+
+    // Clear all button
+    const clearAllBtn = document.createElement('button');
+    clearAllBtn.textContent = '🗑️';
+    clearAllBtn.className = 'clear-all-btn';
+    clearAllBtn.title = 'Clear All Bookmarks';
+    clearAllBtn.addEventListener('click', clearAllBookmarks);
 
     // Undo button
     undoBtn = document.createElement('button');
@@ -124,13 +240,61 @@
     undoBtn.className = 'undo-btn';
     undoBtn.disabled = true;
     undoBtn.addEventListener('click', undoDelete);
-    header.appendChild(undoBtn);
 
+    header.append('YTBookmarks', clearAllBtn, undoBtn);
     sidebar.appendChild(header);
     listContainer = document.createElement('div');
     listContainer.className = 'yt-pins-list';
     sidebar.appendChild(listContainer);
     document.body.appendChild(sidebar);
+
+    // Settings button
+    const settingsBtn = document.createElement('button');
+    settingsBtn.className = 'settings-btn';
+    settingsBtn.textContent = '⚙️';
+    settingsBtn.title = 'Settings';
+    
+    // Create settings menu
+    const settingsMenu = createSettingsMenu();
+    document.body.appendChild(settingsMenu);
+    
+    let hideMenuTimeout;
+    
+    const showMenu = () => {
+      clearTimeout(hideMenuTimeout);
+      const btnRect = settingsBtn.getBoundingClientRect();
+      const menuWidth = 220; // Match the min-width from CSS
+      settingsMenu.style.top = 'auto';
+      settingsMenu.style.bottom = (window.innerHeight - btnRect.top + 8) + 'px';
+      settingsMenu.style.left = (btnRect.left + (btnRect.width / 2) - (menuWidth / 2)) + 'px';
+      settingsMenu.classList.add('visible');
+    };
+
+    const hideMenu = () => {
+      hideMenuTimeout = setTimeout(() => {
+        settingsMenu.classList.remove('visible');
+      }, 100);
+    };
+
+    settingsBtn.addEventListener('mouseenter', showMenu);
+    settingsBtn.addEventListener('mouseleave', hideMenu);
+    settingsMenu.addEventListener('mouseenter', () => clearTimeout(hideMenuTimeout));
+    settingsMenu.addEventListener('mouseleave', hideMenu);
+
+    // Add settings button to video controls
+    const ctrls = document.querySelector('.ytp-chrome-bottom');
+    (ctrls || document.body).appendChild(settingsBtn);
+
+    // Pin button
+    pinBtn = document.createElement('button');
+    pinBtn.className = 'ytp-pin-btn';
+    pinBtn.textContent = '📌';
+    pinBtn.title = 'Add Bookmark';
+    pinBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      addBookmark();
+    });
+    (ctrls || document.body).appendChild(pinBtn);
 
     // Drag logic
     header.addEventListener('mousedown', e => {
@@ -151,18 +315,6 @@
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     });
-
-    // Pin button
-    pinBtn = document.createElement('button');
-    pinBtn.className = 'ytp-pin-btn';
-    pinBtn.textContent = '📌';
-    pinBtn.title = 'Add Bookmark';
-    pinBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      addBookmark();
-    });
-    const ctrls = document.querySelector('.ytp-chrome-bottom');
-    (ctrls || document.body).appendChild(pinBtn);
   }
 
   function renderSidebar() {
