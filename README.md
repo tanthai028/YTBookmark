@@ -7,13 +7,14 @@ A powerful YouTube bookmarking extension that enhances your video watching exper
 ### 📌 Visual Bookmarking
 - Add bookmarks with a single click using the pin button
 - Visual pins on the progress bar show bookmark locations
-- Pins change color based on playback position (white before current time, blue after)
+- Pins in vibrant cyan for better visibility
 - Custom labels for each bookmark
 
 ### ⚙️ Customizable Settings
 - Show/Hide bookmark labels
 - Auto-pause when adding bookmarks
 - Toggle bookmark prompt for labels
+- Quick visibility toggle to show/hide the interface
 - Settings accessible via gear icon in video player
 
 ### 📋 Bookmark Management
@@ -44,6 +45,7 @@ A powerful YouTube bookmarking extension that enhances your video watching exper
 4. Access your bookmarks through the sidebar
 5. Click timestamps to jump to bookmarked moments
 6. Use the gear icon ⚙️ to customize settings
+7. Toggle visibility with the eye icon 👁️ to show/hide the interface
 
 ## Development
 
