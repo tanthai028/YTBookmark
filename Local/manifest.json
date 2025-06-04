@@ -20,6 +20,10 @@
       "run_at": "document_idle"
     }
   ],
+  "web_accessible_resources": [{
+    "resources": ["styles.css"],
+    "matches": ["*://*.youtube.com/*"]
+  }],
   "icons": {
     "48": "icon48.png"
   },
