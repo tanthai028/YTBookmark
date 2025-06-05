@@ -4,11 +4,6 @@
   "version": "2.0",
   "description": "Add visual bookmarks to YouTube videos with customizable pins, labels, and settings. Features auto-pause, undo, and bookmark sharing",
   "permissions": [],
-  "host_permissions": [
-    "*://www.youtube.com/*",
-    "*://*.youtube.com/*",
-    "*://youtu.be/*"
-  ],
   "content_scripts": [
     {
       "matches": [
@@ -26,8 +21,5 @@
   }],
   "icons": {
     "48": "icon48.png"
-  },
-  "action": {
-    "default_title": "YTBookmarks"
   }
 }
