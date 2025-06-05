@@ -301,23 +301,36 @@
     pinBtn = document.createElement('button');
     pinBtn.className = 'ytp-pin-btn';
     pinBtn.textContent = '📌';
-    pinBtn.title = 'Add Bookmark';
+    pinBtn.title = '';
     pinBtn.addEventListener('click', e => {
       e.stopPropagation();
       addBookmark();
     });
 
+    const pinTooltip = document.createElement('div');
+    pinTooltip.className = 'button-tooltip';
+    pinTooltip.textContent = 'Bookmark';
+    pinBtn.appendChild(pinTooltip);
+
     // Settings button
     settingsBtn = document.createElement('button');
     settingsBtn.className = 'settings-btn';
     settingsBtn.textContent = '⚙️';
-    settingsBtn.title = 'Settings';
+    settingsBtn.title = '';
 
     // Visibility toggle button
     const visibilityBtn = document.createElement('button');
     visibilityBtn.className = 'visibility-btn';
-    visibilityBtn.textContent = isVisible ? '👁️' : '👁️‍🗨️';
-    visibilityBtn.title = isVisible ? 'Hide Sidebar' : 'Show Sidebar';
+    
+    const visibilityIcon = document.createElement('span');
+    visibilityIcon.textContent = isVisible ? '👁️' : '👁️‍🗨️';
+    visibilityBtn.appendChild(visibilityIcon);
+    
+    const visibilityTooltip = document.createElement('div');
+    visibilityTooltip.className = 'button-tooltip';
+    visibilityTooltip.textContent = isVisible ? 'Hide UI' : 'Show UI';
+    visibilityBtn.appendChild(visibilityTooltip);
+
     visibilityBtn.addEventListener('click', e => {
       e.stopPropagation();
       const isCurrentlyVisible = !sidebar.classList.contains('hidden');
@@ -326,18 +339,17 @@
         if (document.getElementById('yt-pins-share-ui')) {
           document.getElementById('yt-pins-share-ui').classList.add('hidden');
         }
-        visibilityBtn.textContent = '👁️‍🗨️';
-        visibilityBtn.title = 'Show Sidebar';
-        localStorage.setItem('yt-pins-visibility', 'hidden');
+        visibilityIcon.textContent = '👁️‍🗨️';
+        visibilityTooltip.textContent = 'Show UI';
       } else {
         sidebar.classList.remove('hidden');
         if (document.getElementById('yt-pins-share-ui')) {
           document.getElementById('yt-pins-share-ui').classList.remove('hidden');
         }
-        visibilityBtn.textContent = '👁️';
-        visibilityBtn.title = 'Hide Sidebar';
-        localStorage.setItem('yt-pins-visibility', 'visible');
+        visibilityIcon.textContent = '👁️';
+        visibilityTooltip.textContent = 'Hide Sidebar';
       }
+      localStorage.setItem('yt-pins-visibility', isCurrentlyVisible ? 'hidden' : 'visible');
     });
 
     // Create settings menu

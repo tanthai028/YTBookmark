@@ -356,10 +356,8 @@
   cursor: pointer;
   padding: 1px 3px;
   border-radius: 4px;
-  transition: background-color 0.2s;
-
   opacity: 0.6;
-  transition: opacity 0.2s;
+  transition: background-color 0.2s, opacity 0.2s;
 }
 
 .clear-all-btn:hover {
@@ -430,4 +428,60 @@
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.button-tooltip {
+    position: absolute;
+    background: rgba(28, 28, 28, 0.9);
+    color: white;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+    z-index: 10003;
+}
+
+.ytp-pin-btn:hover .button-tooltip,
+.visibility-btn:hover .button-tooltip,
+.settings-btn:hover .button-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Position for pin button tooltip */
+.ytp-pin-btn .button-tooltip {
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+}
+
+.ytp-pin-btn:hover .button-tooltip {
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Position for visibility button tooltip */
+.visibility-btn .button-tooltip {
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+}
+
+.visibility-btn:hover .button-tooltip {
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Add a small arrow to the tooltip */
+.button-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background: rgba(28, 28, 28, 0.9);
 } 
