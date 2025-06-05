@@ -160,19 +160,66 @@
   z-index: 10000;
 }
 
-#yt-pins-share-ui button {
-  padding: 4px 6px;
-  font-size: 12px;
+#yt-pins-share-ui {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  z-index: 10000;
+  display: flex;
+  gap: 5px;
+}
+
+/* Hide share UI in fullscreen */
+*:fullscreen #yt-pins-share-ui,
+*.fullscreen #yt-pins-share-ui {
+  display: none !important;
+}
+
+.kofi-popup {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  background: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  width: 320px;
+  height: 570px;
+  margin-bottom: 10px;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0.2s ease-out;
+  overflow: hidden;
+}
+
+.kofi-popup.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.kofi-popup iframe {
   border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  pointer-events: auto;
+}
+
+#yt-pins-share-ui button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
   background: #065fd4;
-  color: #fff;
-  transition: background 0.2s;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
 }
 
 #yt-pins-share-ui button:hover {
-  background: #054cb2;
+  background: #0056c7;
 }
 
 .undo-btn {
@@ -362,4 +409,25 @@
 #yt-pins-share-ui.hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+.yt-pins-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  margin: 0 2px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.yt-pins-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.yt-pins-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 } 

@@ -469,7 +469,6 @@
     if (document.getElementById('yt-pins-share-ui')) return;
     const share = document.createElement('div');
     share.id = 'yt-pins-share-ui';
-    share.style = 'position:fixed;bottom:10px;right:10px;z-index:10000;display:flex;gap:5px;';
 
     const exportBtn = document.createElement('button');
     exportBtn.textContent = 'Export Bookmarks';
@@ -516,8 +515,53 @@
       inp.click();
     };
 
-    share.append(exportBtn, importBtn);
+    const kofiBtn = document.createElement('button');
+    kofiBtn.textContent = '☕ Support';
+    kofiBtn.style.position = 'relative';
+    
+    const kofiPopup = document.createElement('div');
+    kofiPopup.className = 'kofi-popup';
+    const kofiFrame = document.createElement('iframe');
+    kofiFrame.src = 'https://ko-fi.com/tht028/?hidefeed=true&widget=true&embed=true&preview=true';
+    kofiFrame.title = 'Ko-fi';
+    kofiPopup.appendChild(kofiFrame);
+    kofiBtn.appendChild(kofiPopup);
+
+    // Add hover handling with delay and animations
+    let hideTimeout;
+    const showPopup = () => {
+        clearTimeout(hideTimeout);
+        // Add visible class to trigger animation
+        requestAnimationFrame(() => {
+            kofiPopup.classList.add('visible');
+        });
+    };
+    const hidePopup = () => {
+        hideTimeout = setTimeout(() => {
+            if (!kofiPopup.matches(':hover')) {
+                // Remove visible class to trigger animation
+                kofiPopup.classList.remove('visible');
+            }
+        }, 250); // Change this number to adjust how long the panel stays visible (in milliseconds)
+    };
+
+    kofiBtn.addEventListener('mouseenter', showPopup);
+    kofiBtn.addEventListener('mouseleave', hidePopup);
+    kofiPopup.addEventListener('mouseenter', showPopup);
+    kofiPopup.addEventListener('mouseleave', hidePopup);
+
+    share.append(exportBtn, importBtn, kofiBtn);
     document.body.appendChild(share);
+
+    // Handle fullscreen changes
+    const updateVisibility = () => {
+        const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+        share.style.display = isFullscreen ? 'none' : 'flex';
+    };
+
+    document.addEventListener('fullscreenchange', updateVisibility);
+    document.addEventListener('webkitfullscreenchange', updateVisibility);
+    updateVisibility();
   }
 
   function initAll() {
