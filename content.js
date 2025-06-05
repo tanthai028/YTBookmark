@@ -64,77 +64,99 @@
     const bar = document.querySelector('.ytp-progress-bar');
     if (!bar || !video) return;
     bar.querySelectorAll('.yt-pin, .ytp-pin-label').forEach(n => n.remove());
-    const barWidth = bar.clientWidth;
-    const placed = [];
+    
+    // Wait for next frame to ensure dimensions are correct
+    requestAnimationFrame(() => {
+      const barWidth = bar.clientWidth;
+      const placed = [];
 
-    bookmarks.forEach(bm => {
-      const frac = bm.time / video.duration;
-      const leftPx = frac * barWidth;
-      const pct = frac * 100 + '%';
+      bookmarks.forEach(bm => {
+        const frac = bm.time / video.duration;
+        const leftPx = frac * barWidth;
+        const pct = frac * 100 + '%';
 
-      const pin = document.createElement('div');
-      pin.className = 'yt-pin';
-      pin.style.left = pct;
+        const pin = document.createElement('div');
+        pin.className = 'yt-pin';
+        pin.style.left = pct;
 
-      // Make pin follow the played portion of the video
-      const updatePinVisibility = () => {
-        const progress = video.currentTime / video.duration;
-        if (progress >= bm.time / video.duration) {
-          pin.classList.add('played');
-          if (settings.showLabels) {
-            // When labels are shown, pin extends from progress bar to label
-            pin.style.bottom = '0';
-            pin.style.height = 'auto';
-            pin.style.top = pin.dataset.labelBottom + 'px';
+        // Make pin follow the played portion of the video
+        const updatePinVisibility = () => {
+          const progress = video.currentTime / video.duration;
+          if (progress >= bm.time / video.duration) {
+            pin.classList.add('played');
+            if (settings.showLabels && !pin.dataset.isEdgeLabel) {
+              pin.style.bottom = '0';
+              pin.style.height = 'auto';
+              pin.style.top = pin.dataset.labelBottom + 'px';
+            } else {
+              pin.style.top = 'unset';
+              pin.style.bottom = '0';
+              pin.style.height = '100%';
+            }
           } else {
-            // When labels are hidden, pin only shows in progress bar
-            pin.style.top = 'unset';
-            pin.style.bottom = '0';
-            pin.style.height = '100%';
+            pin.classList.remove('played');
+            if (settings.showLabels && !pin.dataset.isEdgeLabel) {
+              pin.style.bottom = '0';
+              pin.style.height = 'auto';
+              pin.style.top = pin.dataset.labelBottom + 'px';
+            } else {
+              pin.style.top = 'unset';
+              pin.style.bottom = '0';
+              pin.style.height = '100%';
+            }
           }
-        } else {
-          pin.classList.remove('played');
-          if (settings.showLabels) {
-            // When labels are shown, pin extends from progress bar to label
-            pin.style.bottom = '0';
-            pin.style.height = 'auto';
-            pin.style.top = pin.dataset.labelBottom + 'px';
-          } else {
-            // When labels are hidden, pin only shows in progress bar
-            pin.style.top = 'unset';
-            pin.style.bottom = '0';
-            pin.style.height = '100%';
-          }
+        };
+
+        video.addEventListener('timeupdate', updatePinVisibility);
+        bar.appendChild(pin);
+
+        if (settings.showLabels) {
+          const lbl = document.createElement('div');
+          lbl.className = 'ytp-pin-label';
+          lbl.textContent = bm.label;
+          bar.appendChild(lbl);
+
+          // Get dimensions after adding to DOM and next frame
+          requestAnimationFrame(() => {
+            const lblW = lbl.offsetWidth;
+            const lblH = lbl.offsetHeight;
+            let lvl = 0;
+            for (const p of placed) {
+              if (Math.abs(leftPx - p.left) < (lblW + p.width) / 2) {
+                lvl = Math.max(lvl, p.level + 1);
+              }
+            }
+            const base = -18;
+            const gap = lblH + 2;
+            lbl.style.top = base - lvl * gap + 'px';
+
+            // Handle edge cases for labels at start and end of video
+            if (leftPx < lblW / 2) {
+              // Near start of video
+              lbl.style.left = '0';
+              lbl.style.transform = 'none';
+              pin.dataset.isEdgeLabel = 'true';
+            } else if (leftPx > barWidth - lblW / 2) {
+              // Near end of video
+              lbl.style.left = 'auto';
+              lbl.style.right = '0';
+              lbl.style.transform = 'none';
+              pin.dataset.isEdgeLabel = 'true';
+            } else {
+              // Normal case - center the label
+              lbl.style.left = pct;
+              lbl.style.transform = 'translateX(-50%)';
+            }
+
+            // Store the label's bottom position for the pin
+            pin.dataset.labelBottom = lbl.offsetTop + lbl.offsetHeight;
+            placed.push({ left: leftPx, width: lblW, level: lvl });
+
+            // Force initial pin visibility update
+            updatePinVisibility();
+          });
         }
-      };
-
-      video.addEventListener('timeupdate', updatePinVisibility);
-      bar.appendChild(pin);
-
-      if (settings.showLabels) {
-      const lbl = document.createElement('div');
-      lbl.className = 'ytp-pin-label';
-      lbl.style.left = pct;
-      lbl.textContent = bm.label;
-      bar.appendChild(lbl);
-
-      const lblW = lbl.offsetWidth;
-      const lblH = lbl.offsetHeight;
-      let lvl = 0;
-      for (const p of placed) {
-        if (Math.abs(leftPx - p.left) < (lblW + p.width) / 2) {
-          lvl = Math.max(lvl, p.level + 1);
-        }
-      }
-      const base = -18;
-      const gap = lblH + 2;
-      lbl.style.top = base - lvl * gap + 'px';
-        // Store the label's bottom position for the pin
-        pin.dataset.labelBottom = lbl.offsetTop + lbl.offsetHeight;
-      placed.push({ left: leftPx, width: lblW, level: lvl });
-      }
-
-      updatePinVisibility();
+      });
     });
   }
 
