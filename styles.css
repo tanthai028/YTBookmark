@@ -160,6 +160,21 @@
   z-index: 10000;
 }
 
+/* Add special styling for edge-aligned labels */
+.ytp-pin-label.edge-left {
+  padding-left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  transform: none;
+}
+
+.ytp-pin-label.edge-right {
+  padding-right: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  transform: none;
+}
+
 #yt-pins-share-ui {
   position: fixed;
   bottom: 10px;

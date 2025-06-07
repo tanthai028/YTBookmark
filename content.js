@@ -131,21 +131,27 @@
             lbl.style.top = base - lvl * gap + 'px';
 
             // Handle edge cases for labels at start and end of video
-            if (leftPx < lblW / 2) {
+            if (leftPx < lblW * 0.3) {
               // Near start of video
               lbl.style.left = '0';
               lbl.style.transform = 'none';
+              lbl.classList.add('edge-left');
+              lbl.style.marginLeft = leftPx < lblW / 4 ? '-2px' : '0px';  // More negative when closer to edge
               pin.dataset.isEdgeLabel = 'true';
             } else if (leftPx > barWidth - lblW / 2) {
               // Near end of video
               lbl.style.left = 'auto';
               lbl.style.right = '0';
               lbl.style.transform = 'none';
+              lbl.classList.add('edge-right');
+              lbl.style.marginRight = (leftPx > barWidth - lblW / 4) ? '0.5px' : '0px';  // Adjust margin when closer to edge
               pin.dataset.isEdgeLabel = 'true';
             } else {
               // Normal case - center the label
               lbl.style.left = pct;
               lbl.style.transform = 'translateX(-50%)';
+              lbl.style.marginLeft = '0';
+              lbl.style.marginRight = '0';
             }
 
             // Store the label's bottom position for the pin
@@ -356,20 +362,22 @@
     visibilityBtn.addEventListener('click', e => {
       e.stopPropagation();
       const isCurrentlyVisible = !sidebar.classList.contains('hidden');
+      const shareUI = document.getElementById('yt-pins-share-ui');
+      
       if (isCurrentlyVisible) {
         sidebar.classList.add('hidden');
-        if (document.getElementById('yt-pins-share-ui')) {
-          document.getElementById('yt-pins-share-ui').classList.add('hidden');
+        if (shareUI) {
+          shareUI.classList.add('hidden');
         }
         visibilityIcon.textContent = '👁️‍🗨️';
         visibilityTooltip.textContent = 'Show UI';
       } else {
         sidebar.classList.remove('hidden');
-        if (document.getElementById('yt-pins-share-ui')) {
-          document.getElementById('yt-pins-share-ui').classList.remove('hidden');
+        if (shareUI) {
+          shareUI.classList.remove('hidden');
         }
         visibilityIcon.textContent = '👁️';
-        visibilityTooltip.textContent = 'Hide Sidebar';
+        visibilityTooltip.textContent = 'Hide UI';
       }
       localStorage.setItem('yt-pins-visibility', isCurrentlyVisible ? 'hidden' : 'visible');
     });
@@ -503,6 +511,12 @@
     if (document.getElementById('yt-pins-share-ui')) return;
     const share = document.createElement('div');
     share.id = 'yt-pins-share-ui';
+
+    // Load visibility state from storage and apply it
+    const isVisible = localStorage.getItem('yt-pins-visibility') !== 'hidden';
+    if (!isVisible) {
+      share.classList.add('hidden');
+    }
 
     const exportBtn = document.createElement('button');
     exportBtn.textContent = 'Export Bookmarks';
