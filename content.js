@@ -12,7 +12,13 @@
   const savedSettings = localStorage.getItem('yt-pins-settings');
   if (savedSettings) {
     settings = { ...settings, ...JSON.parse(savedSettings) };
-    }
+  }
+
+  // Load label visibility state from storage
+  const labelVisibility = localStorage.getItem('yt-pins-label-visibility');
+  if (labelVisibility !== null) {
+    settings.showLabels = labelVisibility === 'true';
+  }
 
   // Load external styles
   function injectStyles() {
@@ -20,6 +26,23 @@
     link.rel = 'stylesheet';
     link.href = chrome.runtime.getURL('styles.css');
     document.head.appendChild(link);
+
+    // Add force-hidden style with !important and transition
+    const style = document.createElement('style');
+    style.textContent = `
+        .force-hidden {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            position: fixed !important;
+            z-index: -1 !important;
+        }
+        .yt-pins-sidebar {
+            transition: opacity 0.2s ease-in-out;
+        }
+    `;
+    document.head.appendChild(style);
   }
 
   // Ensure styles are injected when the document is ready
@@ -64,22 +87,27 @@
     const settings = stateManager.get('settings');
     const bookmarks = stateManager.get('bookmarks') || [];
     
-    // First remove any existing pins/labels
+    // Always clean up existing pins first
     if (bar) {
         bar.querySelectorAll('.yt-pin, .ytp-pin-label').forEach(n => n.remove());
     }
-
-    // Only proceed if we have all required elements AND have bookmarks to render
-    if (!bar || !video || !video.duration || !bookmarks.length || !settings.showLabels) return;
+    
+    // Only proceed with rendering if we have all required elements AND have bookmarks to render
+    if (!bar || !video || !video.duration || !bookmarks.length) return;
     
     // Wait for next frame to ensure dimensions are correct
     requestAnimationFrame(() => {
         const barWidth = bar.clientWidth;
         if (!barWidth) return;
         
-        const placed = [];
-
-        bookmarks.forEach(bm => {
+        // Sort bookmarks by time for consistent ordering
+        const sortedBookmarks = [...bookmarks].sort((a, b) => a.time - b.time);
+        
+        // Keep track of occupied spaces at each level
+        const occupiedSpaces = [[]]; // Array of arrays, each sub-array represents a level
+        
+        // Create pins and labels
+        sortedBookmarks.forEach((bm, index) => {
             const frac = bm.time / video.duration;
             if (isNaN(frac) || frac < 0) return;
             
@@ -89,77 +117,102 @@
             const pin = document.createElement('div');
             pin.className = 'yt-pin';
             pin.style.left = pct;
-            pin.style.visibility = 'hidden'; // Hide initially
+            pin.style.visibility = 'visible';
+            pin.style.height = '100%';
+            pin.dataset.pinId = `pin-${index}`;
             bar.appendChild(pin);
 
-            const lbl = document.createElement('div');
-            lbl.className = 'ytp-pin-label';
-            lbl.textContent = bm.label;
-            lbl.style.visibility = 'hidden'; // Hide initially
-            bar.appendChild(lbl);
+            // Only create and show label if settings.showLabels is true
+            const showLabels = localStorage.getItem('yt-pins-label-visibility') !== 'false';
+            if (showLabels) {
+                const lbl = document.createElement('div');
+                lbl.className = 'ytp-pin-label';
+                lbl.textContent = bm.label;
+                lbl.style.visibility = 'hidden';
+                lbl.dataset.pinId = `pin-${index}`;
+                bar.appendChild(lbl);
 
-            requestAnimationFrame(() => {
-                const lblW = lbl.offsetWidth;
-                const lblH = lbl.offsetHeight;
-                let lvl = 0;
-
-                for (const p of placed) {
-                    if (Math.abs(leftPx - p.left) < (lblW + p.width) / 2) {
-                        lvl = Math.max(lvl, p.level + 1);
+                requestAnimationFrame(() => {
+                    const lblW = lbl.offsetWidth;
+                    const lblH = lbl.offsetHeight;
+                    
+                    // Function to check if a space is available at a given level
+                    const isSpaceAvailable = (level, leftPos, width) => {
+                        if (!occupiedSpaces[level]) return true;
+                        
+                        const labelStart = leftPos - width / 2;
+                        const labelEnd = leftPos + width / 2;
+                        
+                        return !occupiedSpaces[level].some(space => {
+                            const spaceStart = space.left - space.width / 2;
+                            const spaceEnd = space.left + space.width / 2;
+                            return !(labelEnd < spaceStart || labelStart > spaceEnd);
+                        });
+                    };
+                    
+                    // Find the lowest possible level where this label can fit
+                    let lvl = 0;
+                    while (!isSpaceAvailable(lvl, leftPx, lblW)) {
+                        lvl++;
+                        if (!occupiedSpaces[lvl]) {
+                            occupiedSpaces[lvl] = [];
+                        }
                     }
-                }
+                    
+                    // Mark this space as occupied at the chosen level
+                    occupiedSpaces[lvl].push({
+                        left: leftPx,
+                        width: lblW
+                    });
 
-                const base = -18;
-                const gap = lblH + 2;
-                lbl.style.top = base - lvl * gap + 'px';
+                    const base = -18;
+                    const gap = lblH + 2;
+                    lbl.style.top = base - lvl * gap + 'px';
 
-                // Handle edge cases for labels at start and end of video
-                if (leftPx < lblW * 0.3) {
-                    lbl.style.left = '0';
-                    lbl.style.transform = 'none';
-                    lbl.classList.add('edge-left');
-                    lbl.style.marginLeft = leftPx < lblW / 4 ? '-2px' : '0px';
-                    pin.dataset.isEdgeLabel = 'true';
-                } else if (leftPx > barWidth - lblW / 2) {
-                    lbl.style.left = 'auto';
-                    lbl.style.right = '0';
-                    lbl.style.transform = 'none';
-                    lbl.classList.add('edge-right');
-                    lbl.style.marginRight = (leftPx > barWidth - lblW / 4) ? '0.5px' : '0px';
-                    pin.dataset.isEdgeLabel = 'true';
-                } else {
-                    lbl.style.left = pct;
-                    lbl.style.transform = 'translateX(-50%)';
-                    lbl.style.marginLeft = '0';
-                    lbl.style.marginRight = '0';
-                }
-
-                // Store the label's bottom position for the pin
-                pin.dataset.labelBottom = lbl.offsetTop + lbl.offsetHeight;
-                placed.push({ left: leftPx, width: lblW, level: lvl });
-
-                // Final validation before showing
-                const rect = lbl.getBoundingClientRect();
-                if (rect.width > 0 && rect.height > 0 && rect.left >= 0) {
-                    lbl.style.visibility = 'visible';
-                    pin.style.visibility = 'visible';
-                } else {
-                    lbl.remove();
-                    pin.remove();
-                }
-
-                // Make pin follow the played portion of the video
-                const updatePinVisibility = () => {
-                    const progress = video.currentTime / video.duration;
-                    if (progress >= bm.time / video.duration) {
-                        pin.classList.add('played');
+                    // Handle edge cases for labels at start and end of video
+                    if (leftPx < lblW * 0.3) {
+                        lbl.style.left = '0';
+                        lbl.style.transform = 'none';
+                        lbl.classList.add('edge-left');
+                        lbl.style.marginLeft = leftPx < lblW / 4 ? '-2px' : '0px';
+                        pin.dataset.isEdgeLabel = 'true';
+                    } else if (leftPx > barWidth - lblW / 2) {
+                        lbl.style.left = 'auto';
+                        lbl.style.right = '0';
+                        lbl.style.transform = 'none';
+                        lbl.classList.add('edge-right');
+                        lbl.style.marginRight = (leftPx > barWidth - lblW / 4) ? '0.5px' : '0px';
+                        pin.dataset.isEdgeLabel = 'true';
                     } else {
-                        pin.classList.remove('played');
+                        lbl.style.left = pct;
+                        lbl.style.transform = 'translateX(-50%)';
+                        lbl.style.marginLeft = '0';
+                        lbl.style.marginRight = '0';
                     }
-                };
-                updatePinVisibility();
-                video.addEventListener('timeupdate', updatePinVisibility);
-            });
+
+                    // Store the label's bottom position for the pin
+                    pin.dataset.labelBottom = lbl.offsetTop + lbl.offsetHeight;
+                    
+                    // Set pin height to reach just to the bottom of the label
+                    const labelDistanceFromBar = Math.abs(lbl.offsetTop);
+                    pin.style.height = `${labelDistanceFromBar - 12}px`;
+                    
+                    // Show label after all calculations are done
+                    lbl.style.visibility = 'visible';
+                });
+            }
+
+            // Make pin follow the played portion of the video
+            const updatePinVisibility = () => {
+                const progress = video.currentTime / video.duration;
+                if (progress >= bm.time / video.duration) {
+                    pin.classList.add('played');
+                } else {
+                    pin.classList.remove('played');
+                }
+            };
+            updatePinVisibility();
+            video.addEventListener('timeupdate', updatePinVisibility);
         });
     });
   }
@@ -196,9 +249,12 @@
 
   function deleteBookmark(i) {
     const bookmarks = stateManager.get('bookmarks') || [];
+    if (i < 0 || i >= bookmarks.length) return;
+    
     stateManager.set('lastDeleted', { bookmark: bookmarks[i], index: i, type: 'single' });
-    bookmarks.splice(i, 1);
-    stateManager.set('bookmarks', bookmarks);
+    const newBookmarks = [...bookmarks];
+    newBookmarks.splice(i, 1);
+    stateManager.set('bookmarks', newBookmarks);
     stateManager.saveBookmarks();
     renderPins();
     renderSidebar();
@@ -235,6 +291,21 @@
     stateManager.set('ui.sidebar', sidebar);
     sidebar.className = 'yt-pins-sidebar';
 
+    // Load saved position for this video
+    const videoId = getVideoId();
+    const savedPosition = localStorage.getItem(`yt-pins-position-${videoId}`);
+    if (savedPosition) {
+        try {
+            const position = JSON.parse(savedPosition);
+            sidebar.style.left = position.left;
+            sidebar.style.top = position.top;
+            // Remove default right position when using custom position
+            sidebar.style.right = 'auto';
+        } catch (e) {
+            console.error('Error loading saved position:', e);
+        }
+    }
+
     // Load visibility state from storage
     const isVisible = localStorage.getItem('yt-pins-visibility') !== 'hidden';
     if (!isVisible) {
@@ -242,11 +313,6 @@
         if (document.getElementById('yt-pins-share-ui')) {
             document.getElementById('yt-pins-share-ui').classList.add('hidden');
         }
-        // Also update showLabels setting when UI is hidden
-        const settings = stateManager.get('settings');
-        settings.showLabels = false;
-        stateManager.set('settings', settings);
-        stateManager.saveSettings();
     }
 
     header = document.createElement('div');
@@ -272,7 +338,11 @@
     clearAllBtn.textContent = '🗑️';
     clearAllBtn.className = 'clear-all-btn';
     clearAllBtn.title = 'Clear All Bookmarks';
-    clearAllBtn.addEventListener('click', clearAllBookmarks);
+    clearAllBtn.onclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        clearAllBookmarks();
+    };
 
     // Undo button
     undoBtn = document.createElement('button');
@@ -280,7 +350,11 @@
     undoBtn.textContent = 'Undo';
     undoBtn.className = 'undo-btn';
     undoBtn.disabled = true;
-    undoBtn.addEventListener('click', undoDelete);
+    undoBtn.onclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        undoDelete();
+    };
 
     // Add buttons to group
     buttonsGroup.append(clearAllBtn, undoBtn);
@@ -297,7 +371,7 @@
     sidebar.appendChild(listContainer);
     document.body.appendChild(sidebar);
 
-    // Create buttons container
+    // Create buttons container for video player
     const buttonsContainer = document.createElement('div');
     buttonsContainer.className = 'yt-pins-buttons-container';
 
@@ -317,69 +391,86 @@
     pinTooltip.textContent = 'Bookmark';
     pinBtn.appendChild(pinTooltip);
 
-    // Visibility toggle button
+    // Create visibility toggle button
     const visibilityBtn = document.createElement('button');
     visibilityBtn.className = 'visibility-btn';
     
+    // Load visibility states from storage
+    const uiVisible = localStorage.getItem('yt-pins-visibility') !== 'hidden';
+    const showLabels = localStorage.getItem('yt-pins-label-visibility') !== 'false';
+    
     const visibilityIcon = document.createElement('span');
-    visibilityIcon.textContent = isVisible ? '👁️' : '👁️‍🗨️';
+    visibilityIcon.textContent = uiVisible ? '👁️' : '👁️‍🗨️';
     visibilityBtn.appendChild(visibilityIcon);
     
     const visibilityTooltip = document.createElement('div');
     visibilityTooltip.className = 'button-tooltip';
-    visibilityTooltip.textContent = isVisible ? 'Hide UI' : 'Show UI';
+    visibilityTooltip.textContent = uiVisible ? 'Hide UI' : 'Show UI';
     visibilityBtn.appendChild(visibilityTooltip);
+
+    // Update settings with the loaded visibility state
+    const settings = stateManager.get('settings');
+    settings.showLabels = showLabels;
+    stateManager.set('settings', settings);
+    stateManager.saveSettings();
 
     visibilityBtn.addEventListener('click', e => {
         e.stopPropagation();
-        const isCurrentlyVisible = !sidebar.classList.contains('hidden');
-        const shareUI = document.getElementById('yt-pins-share-ui');
+        e.preventDefault();
         
-        // Remove existing labels first
-        const bar = document.querySelector('.ytp-progress-bar');
-        if (bar) {
-            bar.querySelectorAll('.yt-pin, .ytp-pin-label').forEach(n => n.remove());
-        }
+        // Toggle visibility state
+        const isCurrentlyVisible = localStorage.getItem('yt-pins-visibility') !== 'hidden';
         
-        if (isCurrentlyVisible) {
-            sidebar.classList.add('hidden');
-            if (shareUI) {
-                shareUI.classList.add('hidden');
-            }
-            visibilityIcon.textContent = '👁️‍🗨️';
-            visibilityTooltip.textContent = 'Show UI';
-            // Hide labels when UI is hidden
-            const settings = stateManager.get('settings');
-            settings.showLabels = false;
-            stateManager.set('settings', settings);
-            stateManager.saveSettings();
-        } else {
-            sidebar.classList.remove('hidden');
-            if (shareUI) {
-                shareUI.classList.remove('hidden');
-            }
-            visibilityIcon.textContent = '👁️';
-            visibilityTooltip.textContent = 'Hide UI';
-            
-            // Use requestAnimationFrame for showing labels
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    // Show labels when UI is shown
-                    const settings = stateManager.get('settings');
-                    settings.showLabels = true;
-                    stateManager.set('settings', settings);
-                    stateManager.saveSettings();
-                    renderPins();  // Re-render pins to update labels visibility
-                });
-            });
-            return;
-        }
-        
+        // Update storage first
         localStorage.setItem('yt-pins-visibility', isCurrentlyVisible ? 'hidden' : 'visible');
+        localStorage.setItem('yt-pins-label-visibility', isCurrentlyVisible ? 'false' : 'true');
+        
+        // Update icon and tooltip
+        visibilityIcon.textContent = isCurrentlyVisible ? '👁️‍🗨️' : '👁️';
+        visibilityTooltip.textContent = isCurrentlyVisible ? 'Show UI' : 'Hide UI';
+
+        // Update settings
+        const settings = stateManager.get('settings');
+        settings.showLabels = !isCurrentlyVisible;
+        stateManager.set('settings', settings);
+        stateManager.saveSettings();
+
+        // Update visibility immediately
+        const sidebar = stateManager.get('ui.sidebar');
+        const shareUI = document.getElementById('yt-pins-share-ui');
+        const progressBar = document.querySelector('.ytp-progress-bar');
+        
+        if (sidebar) {
+            sidebar.style.setProperty('display', isCurrentlyVisible ? 'none' : 'block', 'important');
+        }
+        if (shareUI) {
+            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+            if (!isFullscreen) {
+                shareUI.style.setProperty('display', isCurrentlyVisible ? 'none' : 'flex', 'important');
+            }
+        }
+        if (progressBar) {
+            progressBar.querySelectorAll('.ytp-pin-label').forEach(label => {
+                label.style.setProperty('visibility', isCurrentlyVisible ? 'hidden' : 'visible', 'important');
+            });
+            progressBar.querySelectorAll('.yt-pin').forEach(pin => {
+                if (isCurrentlyVisible) {
+                    pin.style.setProperty('height', '100%', 'important');
+                } else {
+                    const label = progressBar.querySelector(`.ytp-pin-label[data-pin-id="${pin.dataset.pinId}"]`);
+                    if (label) {
+                        const labelDistanceFromBar = Math.abs(label.offsetTop);
+                        pin.style.setProperty('height', `${labelDistanceFromBar - 12}px`, 'important');
+                    }
+                }
+            });
+        }
+
+        // Re-render pins to ensure correct state
         renderPins();
     });
 
-    // Add buttons to container
+    // Add buttons to video player container
     buttonsContainer.append(pinBtn, visibilityBtn);
 
     // Add container to video controls
@@ -390,7 +481,7 @@
         document.body.appendChild(buttonsContainer);
     }
 
-    // Drag logic
+    // Drag logic for sidebar
     header.addEventListener('mousedown', e => {
         e.preventDefault();
         const startX = e.clientX;
@@ -403,6 +494,13 @@
             sidebar.style.top = (ev.clientY - dy) + 'px';
         }
         function onUp() {
+            // Save the position
+            const videoId = getVideoId();
+            const position = {
+                left: sidebar.style.left,
+                top: sidebar.style.top
+            };
+            localStorage.setItem(`yt-pins-position-${videoId}`, JSON.stringify(position));
             document.removeEventListener('mousemove', onMove);
             document.removeEventListener('mouseup', onUp);
         }
@@ -458,6 +556,7 @@
         });
         input.addEventListener('blur', () => {
           const updatedBookmarks = stateManager.get('bookmarks');
+          if (!updatedBookmarks || index >= updatedBookmarks.length) return;
           updatedBookmarks[index].label = input.value.trim() || String(pos + 1);
           stateManager.set('bookmarks', updatedBookmarks);
           stateManager.saveBookmarks();
@@ -482,6 +581,7 @@
         del.title = 'Delete';
         del.addEventListener('click', ev => {
           ev.stopPropagation();
+          ev.preventDefault();
           deleteBookmark(index);
         });
 
@@ -500,15 +600,38 @@
   function destroySidebar() {
     const sidebar = stateManager.get('ui.sidebar');
     const pinBtn = stateManager.get('ui.pinBtn');
+    const scrollHandler = stateManager.get('scrollHandler');
     
-    if (sidebar) sidebar.remove();
+    if (sidebar) {
+        sidebar.style.setProperty('display', 'none', 'important');
+        sidebar.remove();
+    }
     if (pinBtn) pinBtn.remove();
+    if (scrollHandler) {
+        window.removeEventListener('scroll', scrollHandler);
+        stateManager.set('scrollHandler', null);
+    }
     
     const buttonsContainer = document.querySelector('.yt-pins-buttons-container');
     if (buttonsContainer) buttonsContainer.remove();
     
     const shareUI = document.getElementById('yt-pins-share-ui');
-    if (shareUI) shareUI.remove();
+    if (shareUI) {
+        shareUI.style.setProperty('display', 'none', 'important');
+        shareUI.remove();
+    }
+
+    // Clean up pins and labels
+    const progressBar = document.querySelector('.ytp-progress-bar');
+    if (progressBar) {
+        progressBar.querySelectorAll('.yt-pin, .ytp-pin-label').forEach(el => el.remove());
+    }
+
+    // Clean up resize observer
+    if (window.ytPinsResizeObserver) {
+        window.ytPinsResizeObserver.disconnect();
+        window.ytPinsResizeObserver = null;
+    }
 
     // Clear UI references in state
     stateManager.set('ui', {
@@ -529,7 +652,7 @@
     // Load visibility state from storage and apply it
     const isVisible = localStorage.getItem('yt-pins-visibility') !== 'hidden';
     if (!isVisible) {
-        share.classList.add('hidden');
+        share.style.setProperty('display', 'none', 'important');
     }
 
     const exportBtn = document.createElement('button');
@@ -619,7 +742,12 @@
     // Handle fullscreen changes
     const updateVisibility = () => {
         const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-        share.style.display = isFullscreen ? 'none' : 'flex';
+        const userWantsVisible = localStorage.getItem('yt-pins-visibility') !== 'hidden';
+        if (isFullscreen || !userWantsVisible) {
+            share.style.setProperty('display', 'none', 'important');
+        } else {
+            share.style.setProperty('display', 'flex', 'important');
+        }
     };
 
     document.addEventListener('fullscreenchange', updateVisibility);
@@ -639,8 +767,9 @@
             try {
                 const video = document.querySelector('video');
                 const progressBar = document.querySelector('.ytp-progress-bar');
+                const player = document.querySelector('#movie_player');
                 
-                if (!video || !progressBar || !document.body.contains(video)) {
+                if (!video || !progressBar || !document.body.contains(video) || !player) {
                     setTimeout(waitForVideo, 100);
                     return;
                 }
@@ -648,13 +777,85 @@
                 stateManager.set('video', video);
                 stateManager.loadBookmarks();
                 stateManager.loadSettings();
+
+                // Function to update UI visibility
+                const updateVisibility = () => {
+                    const sidebar = stateManager.get('ui.sidebar');
+                    const shareUI = document.getElementById('yt-pins-share-ui');
+                    const progressBar = document.querySelector('.ytp-progress-bar');
+                    
+                    // Get player position
+                    const playerRect = player.getBoundingClientRect();
+                    const isPlayerVisible = playerRect.bottom > 0 && playerRect.top < window.innerHeight / 2;
+                    
+                    // Get user's visibility preferences
+                    const userWantsVisible = localStorage.getItem('yt-pins-visibility') !== 'hidden';
+                    const showLabels = localStorage.getItem('yt-pins-label-visibility') !== 'false';
+                    
+                    // Only show if both conditions are met
+                    const shouldShow = isPlayerVisible && userWantsVisible;
+                    
+                    if (sidebar) {
+                        sidebar.style.setProperty('display', shouldShow ? 'block' : 'none', 'important');
+                    }
+                    if (shareUI) {
+                        const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+                        if (!isFullscreen && shouldShow) {
+                            shareUI.style.setProperty('display', 'flex', 'important');
+                        } else {
+                            shareUI.style.setProperty('display', 'none', 'important');
+                        }
+                    }
+
+                    // Update label visibility
+                    if (progressBar) {
+                        const pins = progressBar.querySelectorAll('.yt-pin');
+                        const labels = progressBar.querySelectorAll('.ytp-pin-label');
+                        
+                        labels.forEach(label => {
+                            label.style.setProperty('visibility', showLabels ? 'visible' : 'hidden', 'important');
+                        });
+                        
+                        pins.forEach(pin => {
+                            if (!showLabels) {
+                                pin.style.setProperty('height', '100%', 'important');
+                            } else {
+                                const label = progressBar.querySelector(`.ytp-pin-label[data-pin-id="${pin.dataset.pinId}"]`);
+                                if (label) {
+                                    const labelDistanceFromBar = Math.abs(label.offsetTop);
+                                    pin.style.setProperty('height', `${labelDistanceFromBar - 12}px`, 'important');
+                                }
+                            }
+                        });
+                    }
+                };
+
+                // Add scroll listener
+                const scrollHandler = () => {
+                    requestAnimationFrame(updateVisibility);
+                };
+
+                window.addEventListener('scroll', scrollHandler, { passive: true });
+                stateManager.set('scrollHandler', scrollHandler);
+                stateManager.set('updateVisibility', updateVisibility);
                 
-                renderPins();
+                // Initial visibility check
+                updateVisibility();
+
+                // Delay initial render to ensure player is ready
+                setTimeout(() => {
+                    if (progressBar) {
+                        progressBar.querySelectorAll('.yt-pin, .ytp-pin-label').forEach(el => el.remove());
+                        renderPins();
+                    }
+                }, 500);
+                
                 if (!stateManager.get('ui.sidebar') || !document.body.contains(stateManager.get('ui.sidebar'))) {
                     createSidebar();
                 }
                 renderSidebar();
                 initShareUI();
+                
             } catch (error) {
                 console.error('Error in waitForVideo:', error);
                 setTimeout(waitForVideo, 100);
@@ -667,31 +868,20 @@
     }
   }
 
-  // Update the observer code to use state manager
+  // Update the observer code
   let last = location.href;
   const observer = new MutationObserver(() => {
     if (location.href !== last) {
-      last = location.href;
-      if (location.pathname === '/watch') {
-        setTimeout(initAll, 100);
-      } else {
-        destroySidebar();
-        // Clear video reference when leaving watch page
-        stateManager.set('video', null);
-      }
+        last = location.href;
+        if (location.pathname === '/watch') {
+            // Add delay before initialization on navigation
+            setTimeout(initAll, 500);
+        } else {
+            destroySidebar();
+            stateManager.set('video', null);
+        }
     }
   });
-
-  // Start observing as early as possible
-  if (document.body) {
-    observer.observe(document, { childList: true, subtree: true });
-    initAll();
-  } else {
-    document.addEventListener('DOMContentLoaded', () => {
-      observer.observe(document, { childList: true, subtree: true });
-  initAll();
-    });
-  }
 
   // Handle YouTube's custom navigation events
   window.addEventListener('yt-navigate-start', () => {
@@ -701,7 +891,8 @@
 
   window.addEventListener('yt-navigate-finish', () => {
     if (location.pathname === '/watch') {
-      setTimeout(initAll, 100);
+        // Add delay before initialization on navigation
+        setTimeout(initAll, 500);
     }
   });
 
