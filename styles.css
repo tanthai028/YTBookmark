@@ -53,7 +53,6 @@
   align-items: center;
   gap: 6px;
   border-radius: 6px;
-
 }
 
 .yt-pins-header img {
@@ -128,10 +127,10 @@
   transform: scale(1.1);
 }
 
-.ytp-pin-btn {
+.ytp-pin-btn, .settings-btn, .visibility-btn {
   position: relative !important;
-  padding: 4px !important;
-  font-size: 20px !important;
+  padding: 2px !important;
+  font-size: 18px !important;
   background: rgba(0, 0, 0, 0.6) !important;
   color: #fff !important;
   border: none !important;
@@ -139,7 +138,12 @@
   cursor: pointer !important;
   z-index: 10002 !important;
   pointer-events: auto !important;
-  margin: 0 4px !important;
+  margin: 0 3px !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .ytp-pin-btn:hover {
@@ -253,161 +257,23 @@
   cursor: default;
 }
 
-.settings-btn {
-  position: relative !important;
-  padding: 4px !important;
-  font-size: 20px !important;
-  background: rgba(0, 0, 0, 0.6) !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: 50% !important;
-  cursor: pointer !important;
-  z-index: 10002 !important;
-  pointer-events: auto !important;
-  margin: 0 4px !important;
-}
-
-.settings-btn:hover {
-  background: rgba(0, 0, 0, 0.8) !important;
-}
-
-.settings-menu {
-  position: fixed;
-  background: #2b2b2b;
-  border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  padding: 6px 0;
-  z-index: 10001;
-  min-width: 220px;
-  color: #fff;
-  font-size: 13px;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.15s, visibility 0.15s;
-}
-
-.settings-menu::before {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%) rotate(45deg);
-  width: 8px;
-  height: 8px;
-  background: #2b2b2b;
-}
-
-.settings-menu.visible {
-  opacity: 1;
-  visibility: visible;
-}
-
-.settings-menu-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  color: #fff;
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-.settings-menu-item:hover {
-  background-color: #3f3f3f;
-}
-
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 28px;
-  height: 16px;
-}
-
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #666;
-  transition: .2s;
-  border-radius: 16px;
-}
-
-.toggle-slider:before {
-  position: absolute;
-  content: "";
-  height: 12px;
-  width: 12px;
-  left: 2px;
-  bottom: 2px;
-  background-color: white;
-  transition: .2s;
-  border-radius: 50%;
-}
-
-.toggle-switch input:checked + .toggle-slider {
-  background-color: #3ea6ff;
-}
-
+/* Remove settings menu related CSS */
+.settings-menu,
+.settings-menu::before,
+.settings-menu.visible,
+.settings-menu-item,
+.settings-menu-item:hover,
+.toggle-switch,
+.toggle-switch input,
+.toggle-slider,
+.toggle-slider:before,
+.toggle-switch input:checked + .toggle-slider,
 .toggle-switch input:checked + .toggle-slider:before {
-  transform: translateX(12px);
+    display: none;
 }
 
-.clear-all-btn {
-  background: none;
-  border: none;
-  color: #ff4d4f;
-  font-size: 14px;
-  cursor: pointer;
-  padding: 1px 3px;
-  border-radius: 4px;
-  opacity: 0.6;
-  transition: background-color 0.2s, opacity 0.2s;
-}
-
-.clear-all-btn:hover {
-  background-color: #ffeaea;
-}
-
-.clear-all-btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.yt-pins-buttons-container {
-  position: absolute !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  bottom: 6px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  z-index: 10002 !important;
-  pointer-events: auto !important;
-}
-
-.visibility-btn {
-  position: relative !important;
-  padding: 4px !important;
-  font-size: 20px !important;
-  background: rgba(0, 0, 0, 0.6) !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: 50% !important;
-  cursor: pointer !important;
-  z-index: 10002 !important;
-  pointer-events: auto !important;
-  margin: 0 4px !important;
+.settings-btn {
+    display: none;
 }
 
 .visibility-btn:hover {
@@ -447,45 +313,37 @@
 
 .button-tooltip {
     position: absolute;
-    background: rgba(28, 28, 28, 0.9);
+    /* background: rgba(28, 28, 28, 0.9); */
+    background: #2b2b2b;
     color: white;
-    padding: 6px 8px;
+    padding: 6px 8px !important;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 12px !important;
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
     transform: translateY(5px);
     transition: opacity 0.2s ease-out, transform 0.2s ease-out;
     z-index: 10003;
+    bottom: calc(100% + 8px) !important;
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+}
+
+/* Position for pin button tooltip */
+.ytp-pin-btn .button-tooltip {
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Position for visibility button tooltip */
+.visibility-btn .button-tooltip {
+    transform: translateX(-50%) translateY(0);
 }
 
 .ytp-pin-btn:hover .button-tooltip,
 .visibility-btn:hover .button-tooltip,
 .settings-btn:hover .button-tooltip {
     opacity: 1;
-    transform: translateY(0);
-}
-
-/* Position for pin button tooltip */
-.ytp-pin-btn .button-tooltip {
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%) translateY(5px);
-}
-
-.ytp-pin-btn:hover .button-tooltip {
-    transform: translateX(-50%) translateY(0);
-}
-
-/* Position for visibility button tooltip */
-.visibility-btn .button-tooltip {
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%) translateY(5px);
-}
-
-.visibility-btn:hover .button-tooltip {
     transform: translateX(-50%) translateY(0);
 }
 
@@ -498,5 +356,41 @@
     transform: translateX(-50%) rotate(45deg);
     width: 8px;
     height: 8px;
-    background: rgba(28, 28, 28, 0.9);
+    background: #2b2b2b;
+}
+
+.yt-pins-buttons-container {
+    position: absolute !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    bottom: 4px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 10002 !important;
+    pointer-events: auto !important;
+    gap: 2px !important;
+    margin-bottom: 4px !important;
+}
+
+.clear-all-btn {
+    background: none;
+    border: none;
+    color: #ff4d4f;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0px 3px;
+    border-radius: 4px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.clear-all-btn:hover {
+    opacity: 1;
+}
+
+.header-buttons-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 } 
