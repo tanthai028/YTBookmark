@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "YTBookmarks",
   "version": "2.2",
-  "description": "Add visual bookmarks to YouTube videos with customizable pins, labels, and settings. Features auto-pause, undo, and bookmark sharing",
+  "description": "Add visual pins to YouTube's progress bar to bookmark key moments. Features instant labeling, undo support, and bookmark sharing.",
   "content_scripts": [
     {
       "matches": [
