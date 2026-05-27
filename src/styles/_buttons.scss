@@ -1,0 +1,46 @@
+@use 'variables' as *;
+
+%circle-control-btn {
+  position: relative !important;
+  padding: 2px !important;
+  font-size: 18px !important;
+  background: $color-btn-overlay !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  z-index: $z-controls !important;
+  pointer-events: auto !important;
+  margin: 0 3px !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  &:hover {
+    background: $color-btn-overlay-hover !important;
+  }
+}
+
+.ytp-pin-btn {
+  @extend %circle-control-btn;
+}
+
+.visibility-btn {
+  @extend %circle-control-btn;
+}
+
+.yt-pins-buttons-container {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  bottom: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: $z-controls !important;
+  pointer-events: auto !important;
+  gap: 2px !important;
+  margin-bottom: 4px !important;
+}

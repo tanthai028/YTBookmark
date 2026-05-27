@@ -1,0 +1,21 @@
+{
+  "name": "ytbookmark",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "npm run build:js && npm run build:css",
+    "build:js": "esbuild src/js/content.js --bundle --format=iife --platform=browser --outfile=content.js",
+    "build:css": "sass src/styles/main.scss styles.css",
+    "watch": "concurrently \"npm run watch:js\" \"npm run watch:css\"",
+    "watch:js": "esbuild src/js/content.js --bundle --format=iife --platform=browser --outfile=content.js --watch",
+    "watch:css": "sass --watch src/styles/main.scss:styles.css"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "esbuild": "^0.25.0",
+    "sass": "^1.87.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

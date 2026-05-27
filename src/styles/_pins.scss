@@ -1,0 +1,39 @@
+@use 'variables' as *;
+
+.yt-pin {
+  position: absolute;
+  width: 2px;
+  bottom: 0;
+  background-color: $color-pin !important;
+  pointer-events: none;
+  z-index: $z-pin;
+  height: 100%;
+}
+
+.ytp-pin-label {
+  position: absolute;
+  top: -18px;
+  transform: translateX(-50%);
+  padding: 2px 4px;
+  font-size: 10px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: $z-ui-base;
+
+  &.edge-left {
+    padding-left: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    transform: none;
+  }
+
+  &.edge-right {
+    padding-right: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    transform: none;
+  }
+}

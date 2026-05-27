@@ -1,0 +1,41 @@
+@use 'variables' as *;
+
+.button-tooltip {
+  position: absolute;
+  background: $color-tooltip;
+  color: white;
+  padding: 6px 8px !important;
+  border-radius: 4px;
+  font-size: 12px !important;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(5px);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  z-index: $z-tooltip;
+  bottom: calc(100% + 8px) !important;
+  left: 50%;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background: $color-tooltip;
+  }
+}
+
+.ytp-pin-btn,
+.visibility-btn {
+  .button-tooltip {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  &:hover .button-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

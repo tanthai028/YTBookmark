@@ -1,0 +1,156 @@
+@use 'variables' as *;
+
+.yt-pins-sidebar {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 220px;
+  max-height: 60vh;
+  padding: 4px 6px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  color: $color-text;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  z-index: $z-ui-base;
+  background: $color-sidebar-bg !important;
+  transition: background 0.2s, opacity 0.2s !important;
+  opacity: 0.6 !important;
+
+  &:hover {
+    background: $color-sidebar-bg-hover !important;
+    opacity: 1 !important;
+  }
+}
+
+.yt-pins-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px;
+  margin-top: 4px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: move;
+  user-select: none;
+
+  .title-section {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 6px;
+  }
+
+  img {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.yt-pins-list {
+  padding: 4px 0;
+
+  .empty-message {
+    color: $color-text-muted;
+    margin-left: 10px;
+    padding: 4px 0;
+  }
+}
+
+.bookmark-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px;
+  margin-bottom: 4px;
+  background: $color-entry-bg;
+  border-radius: 8px;
+  transition: background 0.2s;
+  min-width: 0;
+
+  &:hover {
+    background: $color-entry-hover;
+  }
+}
+
+.bookmark-input {
+  flex: 1;
+  margin-right: 6px;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 1);
+  min-width: 0;
+
+  &:focus {
+    outline: none;
+    border-color: $color-accent;
+    background: #eef5ff;
+  }
+}
+
+.bookmark-time {
+  white-space: nowrap;
+  padding: 2px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $color-accent;
+  background: rgba(255, 255, 255, 1);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: $color-delete;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.header-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.clear-all-btn {
+  background: none;
+  border: none;
+  color: $color-delete;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 3px;
+  border-radius: 4px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.undo-btn {
+  padding: 1px 3px;
+  font-size: 12px;
+  font-weight: 600;
+  background: $color-undo-bg;
+  color: $color-undo-text;
+  border: 1px solid $color-undo-border;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
