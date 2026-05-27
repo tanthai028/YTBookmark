@@ -1,33 +1,24 @@
 {
-  "manifest_version": 3,
-  "name": "YTBookmarks",
-  "version": "2.0",
-  "description": "Add video bookmarks to YouTube with a draggable sidebar, progress bar pins, and import/export support.",
-  "permissions": ["storage", "scripting"],
-  "host_permissions": [
-    "*://www.youtube.com/*",
-    "*://*.youtube.com/*",
-    "*://youtu.be/*"
-  ],
-  "content_scripts": [
-    {
-      "matches": [
-        "*://www.youtube.com/watch*",
-        "*://*.youtube.com/watch*",
-        "*://youtu.be/*"
-      ],
-      "js": ["content.js"],
-      "run_at": "document_idle"
-    }
-  ],
-  "web_accessible_resources": [{
-    "resources": ["styles.css"],
-    "matches": ["*://*.youtube.com/*"]
-  }],
-  "icons": {
-    "48": "icon48.png"
-  },
-  "action": {
-    "default_title": "YTBookmarks"
-  }
+   "background": {
+      "service_worker": "background.js"
+   },
+   "content_scripts": [ {
+      "js": [ "content.js" ],
+      "matches": [ "*://www.youtube.com/*", "*://*.youtube.com/*", "*://youtu.be/*" ],
+      "run_at": "document_start"
+   } ],
+   "description": "Add visual pins to YouTube's progress bar to bookmark key moments. Features instant labeling, undo support, and bookmark sharing.",
+   "icons": {
+      "48": "icon48.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsnD591p3NS+0DWUsnhyo165wgXhmOminvHc/dD6QkhGYfAW9Z+dbepUbfTaxaJYUWmrYGVM1cS3iwwu110OldNqRj1JSypy9z9GYu6OECLwU5lIvC29J20WTWh8wfr/KA2KpL3Z4ZT/XpQPUL6o8769JPdDl37u9EtzlW1gaYT1vMdhEzUHj7uEvbDYZs9+tDAxgokAHZHKq04zXzsTVfTN3MUBGOJcyCaQi6xUkLM2oql5zpVk+8NUn4g0ioIHKeSyBhzp/7KSXBAgYNhAI3909EdM1LpAz3pYAimI7BPv1zuiSYQ704AwFiDx1E4P4j1D1himjFuZ9+BuAZgmOiQIDAQAB",
+   "manifest_version": 3,
+   "name": "YTBookmarks",
+   "permissions": [ "contextMenus" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "2.3",
+   "web_accessible_resources": [ {
+      "matches": [ "*://*.youtube.com/*" ],
+      "resources": [ "styles.css", "icon48.png" ]
+   } ]
 }
