@@ -16,9 +16,6 @@
   font-size: 13px;
   border-radius: 14px;
   border: 1px solid $color-sidebar-border;
-  box-shadow:
-    0 12px 4px rgba(0, 0, 0, 0.7),
-    0 2px 8px rgba(0, 0, 0, 0.5);
   z-index: $z-ui-base;
   background: $color-sidebar-bg !important;
   backdrop-filter: blur(24px) saturate(1.4) !important;
