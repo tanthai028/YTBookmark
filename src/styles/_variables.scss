@@ -4,20 +4,47 @@ $z-ui-base: 10000;
 $z-controls: 10002;
 $z-tooltip: 10003;
 
-// Colors
-$color-pin: #00bcd4;
-$color-accent: #065fd4;
-$color-accent-hover: #0056c7;
-$color-delete: #ff4d4f;
-$color-undo-bg: #ffeaea;
-$color-undo-text: #d32f2f;
-$color-undo-border: #f77;
-$color-sidebar-bg: rgba(255, 255, 255, 0.8);
-$color-sidebar-bg-hover: rgba(255, 255, 255, 1);
-$color-entry-bg: rgba(249, 249, 249, 0.8);
-$color-entry-hover: rgba(238, 238, 238, 0.9);
-$color-tooltip: #2b2b2b;
-$color-btn-overlay: rgba(0, 0, 0, 0.6);
-$color-btn-overlay-hover: rgba(0, 0, 0, 0.8);
-$color-text: #1a1a1a;
-$color-text-muted: #888;
+// Pin / accent
+$color-pin: #00e5ff;
+$color-accent: #00e5ff;
+$color-accent-hover: #00b8d9;
+
+// Actions
+$color-delete: #ef4444;
+$color-undo-bg: rgba(239, 68, 68, 0.12);
+$color-undo-text: #f87171;
+$color-undo-border: rgba(239, 68, 68, 0.28);
+
+// Sidebar surface
+$color-sidebar-bg: rgba(11, 11, 14, 0.88);
+$color-sidebar-bg-hover: rgba(11, 11, 14, 0.97);
+$color-sidebar-border: rgba(255, 255, 255, 0.08);
+
+// Bookmark entries
+$color-entry-bg: rgba(255, 255, 255, 0.04);
+$color-entry-hover: rgba(255, 255, 255, 0.08);
+
+// Tooltip
+$color-tooltip: #0d0d10;
+
+// Player control buttons
+$color-btn-overlay: rgba(0, 0, 0, 0.62);
+$color-btn-overlay-hover: rgba(0, 0, 0, 0.86);
+
+// Text
+$color-text: #f0f0f4;
+$color-text-muted: #55556e;
+$color-text-secondary: #8080a0;
+
+// Inputs
+$color-input-bg: rgba(255, 255, 255, 0.05);
+$color-input-border: rgba(255, 255, 255, 0.08);
+$color-input-focus-border: rgba(0, 229, 255, 0.4);
+$color-input-focus-bg: rgba(0, 229, 255, 0.05);
+
+// Badge / timestamp
+$color-badge-bg: rgba(0, 229, 255, 0.12);
+$color-badge-text: #00e5ff;
+$color-timestamp: #00e5ff;
+$color-timestamp-bg: rgba(0, 229, 255, 0.08);
+$color-timestamp-hover-bg: rgba(0, 229, 255, 0.18);

@@ -1,52 +1,51 @@
+let _card = null;
+
 export function initShareUI() {
   if (document.getElementById('yt-pins-share-ui')) return;
 
-  const share = document.createElement('div');
-  share.id = 'yt-pins-share-ui';
+  const container = document.createElement('div');
+  container.id = 'yt-pins-share-ui';
 
-  const isVisible = localStorage.getItem('yt-pins-visibility') !== 'hidden';
-  if (!isVisible) share.style.setProperty('display', 'none', 'important');
+  const card = document.createElement('div');
+  card.className = 'kofi-card';
+  _card = card;
 
-  const kofiBtn = document.createElement('button');
-  kofiBtn.textContent = '☕';
-  kofiBtn.style.position = 'relative';
-  kofiBtn.className = 'kofi-circle-btn';
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'kofi-card-close';
+  closeBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  closeBtn.addEventListener('click', () => card.classList.remove('visible'));
 
-  const kofiPopup = document.createElement('div');
-  kofiPopup.className = 'kofi-popup';
+  const cardTitle = document.createElement('p');
+  cardTitle.className = 'kofi-card-title';
+  cardTitle.textContent = 'Enjoying YTBookmarks?';
 
-  const kofiFrame = document.createElement('iframe');
-  kofiFrame.src = 'https://ko-fi.com/tht028/?hidefeed=true&widget=true&embed=true&preview=true';
-  kofiFrame.title = 'Ko-fi';
-  kofiPopup.appendChild(kofiFrame);
-  kofiBtn.appendChild(kofiPopup);
+  const cardSub = document.createElement('p');
+  cardSub.className = 'kofi-card-sub';
+  cardSub.textContent = 'Help keep it free and updated';
 
-  let hideTimeout;
-  const showPopup = () => {
-    clearTimeout(hideTimeout);
-    requestAnimationFrame(() => kofiPopup.classList.add('visible'));
-  };
-  const hidePopup = () => {
-    hideTimeout = setTimeout(() => {
-      if (!kofiPopup.matches(':hover')) kofiPopup.classList.remove('visible');
-    }, 250);
-  };
+  const donateBtn = document.createElement('a');
+  donateBtn.className = 'kofi-donate-btn';
+  donateBtn.href = 'https://ko-fi.com/tht028?amount=1';
+  donateBtn.target = '_blank';
+  donateBtn.rel = 'noopener';
+  donateBtn.textContent = 'Buy a coffee — $1';
 
-  kofiBtn.addEventListener('mouseenter', showPopup);
-  kofiBtn.addEventListener('mouseleave', hidePopup);
-  kofiPopup.addEventListener('mouseenter', showPopup);
-  kofiPopup.addEventListener('mouseleave', hidePopup);
+  card.append(closeBtn, cardTitle, cardSub, donateBtn);
+  container.append(card);
+  document.body.appendChild(container);
 
-  share.append(kofiBtn);
-  document.body.appendChild(share);
-
-  const updateShareUIVisibility = () => {
+  const updateVisibility = () => {
     const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
     const userWantsVisible = localStorage.getItem('yt-pins-visibility') !== 'hidden';
-    share.style.setProperty('display', isFullscreen || !userWantsVisible ? 'none' : 'flex', 'important');
+    container.style.setProperty('display', isFullscreen || !userWantsVisible ? 'none' : 'block', 'important');
   };
 
-  document.addEventListener('fullscreenchange', updateShareUIVisibility);
-  document.addEventListener('webkitfullscreenchange', updateShareUIVisibility);
-  updateShareUIVisibility();
+  document.addEventListener('fullscreenchange', updateVisibility);
+  document.addEventListener('webkitfullscreenchange', updateVisibility);
+  updateVisibility();
+}
+
+export function toggleSupportCard() {
+  if (!_card) return;
+  _card.classList.toggle('visible');
 }

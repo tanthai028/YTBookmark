@@ -2,38 +2,40 @@
 
 .yt-pin {
   position: absolute;
-  width: 2px;
+  width: 3px;
   bottom: 0;
   background-color: $color-pin !important;
   pointer-events: none;
   z-index: $z-pin;
   height: 100%;
+  border-radius: 1.5px;
+
 }
 
 .ytp-pin-label {
   position: absolute;
-  top: -18px;
+  top: -20px;
   transform: translateX(-50%);
-  padding: 2px 4px;
+  padding: 2px 5px;
   font-size: 10px;
+  font-weight: 500;
   color: #fff;
-  background: rgba(0, 0, 0, 0.75);
-  border-radius: 4px;
+  background: rgba(11, 11, 14, 0.9);
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  border-radius: 5px;
   white-space: nowrap;
   pointer-events: none;
   z-index: $z-ui-base;
 
   &.edge-left {
-    padding-left: 0;
+    transform: none;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
-    transform: none;
   }
 
   &.edge-right {
-    padding-right: 0;
+    transform: none;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
-    transform: none;
   }
 }

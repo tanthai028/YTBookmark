@@ -5,6 +5,15 @@
     const s = String(Math.floor(t % 60)).padStart(2, "0");
     return `${m}:${s}`;
   }
+  function parseTime(str) {
+    const parts = str.trim().split(":");
+    if (parts.length === 2) {
+      const m = parseInt(parts[0], 10);
+      const s = parseInt(parts[1], 10);
+      if (!isNaN(m) && !isNaN(s) && m >= 0 && s >= 0 && s < 60) return m * 60 + s;
+    }
+    return null;
+  }
   function getVideoId() {
     return new URLSearchParams(location.search).get("v");
   }
@@ -223,6 +232,17 @@
   }
 
   // src/js/sidebar.js
+  var ICON_X = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  var ICON_CLEAR_ALL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h12"/><path d="M3 12h9"/><path d="M3 18h6"/><line x1="16" y1="14" x2="22" y2="20"/><line x1="22" y1="14" x2="16" y2="20"/></svg>`;
+  var ICON_BOOKMARK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
+  var ICON_BOOKMARK_EMPTY = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
+  var ICON_EYE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  var ICON_EYE_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+  function flashSidebar(sidebar) {
+    clearTimeout(sidebar._flashTimeout);
+    sidebar.classList.add("just-shown");
+    sidebar._flashTimeout = setTimeout(() => sidebar.classList.remove("just-shown"), 2500);
+  }
   function renderSidebar() {
     const listContainer = stateManager.get("ui.listContainer");
     const bookmarks = stateManager.get("bookmarks") || [];
@@ -232,22 +252,46 @@
       createSidebar();
       return;
     }
+    const countBadge = stateManager.get("ui.countBadge");
+    if (countBadge) {
+      countBadge.textContent = bookmarks.length;
+      countBadge.style.display = bookmarks.length ? "" : "none";
+    }
     try {
       listContainer.innerHTML = "";
       if (!bookmarks.length) {
         const ph = document.createElement("div");
         ph.className = "empty-message";
-        ph.textContent = "No bookmarks yet";
+        const icon = document.createElement("span");
+        icon.className = "empty-icon";
+        icon.innerHTML = ICON_BOOKMARK_EMPTY;
+        const msg = document.createElement("span");
+        msg.textContent = "No bookmarks yet";
+        ph.append(icon, msg);
         listContainer.appendChild(ph);
         return;
       }
-      const sorted = bookmarks.map((bm, i) => ({ bm, index: i })).sort((a, b) => a.bm.time - b.bm.time);
+      const searchInput = stateManager.get("ui.searchInput");
+      const query = searchInput ? searchInput.value.trim().toLowerCase() : "";
+      const sorted = bookmarks.map((bm, i) => ({ bm, index: i })).sort((a, b) => a.bm.time - b.bm.time).filter(({ bm }) => !query || bm.label.toLowerCase().includes(query));
+      if (!sorted.length) {
+        const ph = document.createElement("div");
+        ph.className = "empty-message";
+        const msg = document.createElement("span");
+        msg.textContent = "No matches";
+        ph.appendChild(msg);
+        listContainer.appendChild(ph);
+        return;
+      }
       sorted.forEach(({ bm, index }, pos) => {
         const entry = document.createElement("div");
         entry.className = "bookmark-entry";
         entry.addEventListener("click", () => {
           if (video && document.body.contains(video)) video.currentTime = bm.time;
         });
+        const positionBadge = document.createElement("span");
+        positionBadge.className = "bookmark-position";
+        positionBadge.textContent = pos + 1;
         const input = document.createElement("input");
         input.type = "text";
         input.value = bm.label;
@@ -272,20 +316,61 @@
         const ts = document.createElement("span");
         ts.className = "bookmark-time";
         ts.textContent = formatTime(bm.time);
+        ts.title = "Click to seek \xB7 Right-click to edit time";
         ts.addEventListener("click", (ev) => {
           ev.stopPropagation();
           if (video && document.body.contains(video)) video.currentTime = bm.time;
         });
+        ts.addEventListener("contextmenu", (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          const timeInput = document.createElement("input");
+          timeInput.type = "text";
+          timeInput.value = formatTime(bm.time);
+          timeInput.className = "bookmark-time-edit";
+          ts.replaceWith(timeInput);
+          timeInput.select();
+          const commit = () => {
+            const secs = parseTime(timeInput.value);
+            if (secs !== null) {
+              const updated = stateManager.get("bookmarks");
+              if (!updated || index >= updated.length) {
+                timeInput.replaceWith(ts);
+                return;
+              }
+              updated[index].time = secs;
+              stateManager.set("bookmarks", updated);
+              stateManager.saveBookmarks();
+              renderPins();
+              renderSidebar();
+            } else {
+              timeInput.replaceWith(ts);
+            }
+          };
+          timeInput.addEventListener("blur", commit);
+          timeInput.addEventListener("keydown", (ev2) => {
+            if (ev2.key === "Enter") {
+              ev2.preventDefault();
+              timeInput.blur();
+            }
+            if (ev2.key === "Escape") {
+              ev2.preventDefault();
+              timeInput.replaceWith(ts);
+            }
+          });
+          timeInput.addEventListener("click", (ev2) => ev2.stopPropagation());
+          timeInput.focus();
+        });
         const del = document.createElement("button");
         del.className = "delete-btn";
-        del.textContent = "\u2716";
+        del.innerHTML = ICON_X;
         del.title = "Delete";
         del.addEventListener("click", (ev) => {
           ev.stopPropagation();
           ev.preventDefault();
           deleteBookmark(index);
         });
-        entry.append(input, ts, del);
+        entry.append(positionBadge, input, ts, del);
         listContainer.appendChild(entry);
       });
     } catch (error) {
@@ -325,11 +410,20 @@
     const icon = document.createElement("img");
     icon.src = chrome.runtime.getURL("icon48.png");
     icon.alt = "YTBookmarks";
-    titleSection.append(icon, "YTBookmarks");
+    const titleText = document.createElement("span");
+    titleText.className = "title-text";
+    titleText.textContent = "YTBookmarks";
+    const countBadge = document.createElement("span");
+    stateManager.set("ui.countBadge", countBadge);
+    countBadge.className = "bookmark-count-badge";
+    const bookmarks = stateManager.get("bookmarks") || [];
+    countBadge.textContent = bookmarks.length;
+    countBadge.style.display = bookmarks.length ? "" : "none";
+    titleSection.append(icon, titleText, countBadge);
     const buttonsGroup = document.createElement("div");
     buttonsGroup.className = "header-buttons-group";
     const clearAllBtn = document.createElement("button");
-    clearAllBtn.textContent = "\u{1F5D1}\uFE0F";
+    clearAllBtn.innerHTML = ICON_CLEAR_ALL;
     clearAllBtn.className = "clear-all-btn";
     clearAllBtn.title = "Clear All Bookmarks";
     clearAllBtn.onclick = (e) => {
@@ -350,37 +444,61 @@
     buttonsGroup.append(clearAllBtn, undoBtn);
     header.append(titleSection, buttonsGroup);
     sidebar.appendChild(header);
+    const searchContainer = document.createElement("div");
+    searchContainer.className = "yt-pins-search";
+    const searchInput = document.createElement("input");
+    searchInput.type = "text";
+    searchInput.placeholder = "Search bookmarks\u2026";
+    searchInput.className = "search-input";
+    stateManager.set("ui.searchInput", searchInput);
+    searchInput.addEventListener("input", () => renderSidebar());
+    searchInput.addEventListener("click", (ev) => ev.stopPropagation());
+    searchContainer.appendChild(searchInput);
+    sidebar.appendChild(searchContainer);
     const listContainer = document.createElement("div");
     stateManager.set("ui.listContainer", listContainer);
     listContainer.className = "yt-pins-list";
     sidebar.appendChild(listContainer);
     document.body.appendChild(sidebar);
+    flashSidebar(sidebar);
+    const sharedTooltip = document.createElement("div");
+    sharedTooltip.className = "button-tooltip";
+    document.body.appendChild(sharedTooltip);
+    stateManager.set("ui.sharedTooltip", sharedTooltip);
+    function showTooltip(btn, text) {
+      const rect = btn.getBoundingClientRect();
+      sharedTooltip.textContent = text;
+      sharedTooltip.style.left = Math.round(rect.left + rect.width / 2) + "px";
+      sharedTooltip.style.top = Math.round(rect.top - sharedTooltip.offsetHeight - 8) + "px";
+      sharedTooltip.classList.add("visible");
+    }
+    function hideTooltip() {
+      sharedTooltip.classList.remove("visible");
+    }
     const buttonsContainer = document.createElement("div");
     buttonsContainer.className = "yt-pins-buttons-container";
     const pinBtn = document.createElement("button");
     stateManager.set("ui.pinBtn", pinBtn);
     pinBtn.className = "ytp-pin-btn";
-    pinBtn.textContent = "\u{1F4CC}";
-    pinBtn.title = "";
+    pinBtn.innerHTML = ICON_BOOKMARK;
     pinBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       addBookmark();
     });
-    const pinTooltip = document.createElement("div");
-    pinTooltip.className = "button-tooltip";
-    pinTooltip.textContent = "Bookmark";
-    pinBtn.appendChild(pinTooltip);
+    pinBtn.addEventListener("mouseenter", () => showTooltip(pinBtn, "Bookmark"));
+    pinBtn.addEventListener("mouseleave", hideTooltip);
     const visibilityBtn = document.createElement("button");
     visibilityBtn.className = "visibility-btn";
     const uiVisible = localStorage.getItem("yt-pins-visibility") !== "hidden";
     const showLabels = localStorage.getItem("yt-pins-label-visibility") !== "false";
     const visibilityIcon = document.createElement("span");
-    visibilityIcon.textContent = uiVisible ? "\u{1F441}\uFE0F" : "\u{1F441}\uFE0F\u200D\u{1F5E8}\uFE0F";
+    visibilityIcon.innerHTML = uiVisible ? ICON_EYE : ICON_EYE_OFF;
     visibilityBtn.appendChild(visibilityIcon);
-    const visibilityTooltip = document.createElement("div");
-    visibilityTooltip.className = "button-tooltip";
-    visibilityTooltip.textContent = uiVisible ? "Hide UI" : "Show UI";
-    visibilityBtn.appendChild(visibilityTooltip);
+    visibilityBtn.addEventListener("mouseenter", () => {
+      const currentlyVisible = localStorage.getItem("yt-pins-visibility") !== "hidden";
+      showTooltip(visibilityBtn, currentlyVisible ? "Hide UI" : "Show UI");
+    });
+    visibilityBtn.addEventListener("mouseleave", hideTooltip);
     const settings = stateManager.get("settings");
     settings.showLabels = showLabels;
     stateManager.set("settings", settings);
@@ -391,8 +509,8 @@
       const isCurrentlyVisible = localStorage.getItem("yt-pins-visibility") !== "hidden";
       localStorage.setItem("yt-pins-visibility", isCurrentlyVisible ? "hidden" : "visible");
       localStorage.setItem("yt-pins-label-visibility", isCurrentlyVisible ? "false" : "true");
-      visibilityIcon.textContent = isCurrentlyVisible ? "\u{1F441}\uFE0F\u200D\u{1F5E8}\uFE0F" : "\u{1F441}\uFE0F";
-      visibilityTooltip.textContent = isCurrentlyVisible ? "Show UI" : "Hide UI";
+      visibilityIcon.innerHTML = isCurrentlyVisible ? ICON_EYE_OFF : ICON_EYE;
+      hideTooltip();
       const s = stateManager.get("settings");
       s.showLabels = !isCurrentlyVisible;
       stateManager.set("settings", s);
@@ -402,6 +520,7 @@
       const progressBar = document.querySelector(".ytp-progress-bar");
       if (currentSidebar) {
         currentSidebar.style.setProperty("display", isCurrentlyVisible ? "none" : "block", "important");
+        if (!isCurrentlyVisible) flashSidebar(currentSidebar);
       }
       if (shareUI) {
         const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
@@ -475,57 +594,18 @@
       window.ytPinsResizeObserver.disconnect();
       window.ytPinsResizeObserver = null;
     }
+    const sharedTooltip = stateManager.get("ui.sharedTooltip");
+    if (sharedTooltip) sharedTooltip.remove();
     stateManager.set("ui", {
       sidebar: null,
       listContainer: null,
       header: null,
       pinBtn: null,
-      undoBtn: null
+      undoBtn: null,
+      countBadge: null,
+      sharedTooltip: null,
+      searchInput: null
     });
-  }
-
-  // src/js/share-ui.js
-  function initShareUI() {
-    if (document.getElementById("yt-pins-share-ui")) return;
-    const share = document.createElement("div");
-    share.id = "yt-pins-share-ui";
-    const isVisible = localStorage.getItem("yt-pins-visibility") !== "hidden";
-    if (!isVisible) share.style.setProperty("display", "none", "important");
-    const kofiBtn = document.createElement("button");
-    kofiBtn.textContent = "\u2615";
-    kofiBtn.style.position = "relative";
-    kofiBtn.className = "kofi-circle-btn";
-    const kofiPopup = document.createElement("div");
-    kofiPopup.className = "kofi-popup";
-    const kofiFrame = document.createElement("iframe");
-    kofiFrame.src = "https://ko-fi.com/tht028/?hidefeed=true&widget=true&embed=true&preview=true";
-    kofiFrame.title = "Ko-fi";
-    kofiPopup.appendChild(kofiFrame);
-    kofiBtn.appendChild(kofiPopup);
-    let hideTimeout;
-    const showPopup = () => {
-      clearTimeout(hideTimeout);
-      requestAnimationFrame(() => kofiPopup.classList.add("visible"));
-    };
-    const hidePopup = () => {
-      hideTimeout = setTimeout(() => {
-        if (!kofiPopup.matches(":hover")) kofiPopup.classList.remove("visible");
-      }, 250);
-    };
-    kofiBtn.addEventListener("mouseenter", showPopup);
-    kofiBtn.addEventListener("mouseleave", hidePopup);
-    kofiPopup.addEventListener("mouseenter", showPopup);
-    kofiPopup.addEventListener("mouseleave", hidePopup);
-    share.append(kofiBtn);
-    document.body.appendChild(share);
-    const updateShareUIVisibility = () => {
-      const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-      const userWantsVisible = localStorage.getItem("yt-pins-visibility") !== "hidden";
-      share.style.setProperty("display", isFullscreen || !userWantsVisible ? "none" : "flex", "important");
-    };
-    document.addEventListener("fullscreenchange", updateShareUIVisibility);
-    document.addEventListener("webkitfullscreenchange", updateShareUIVisibility);
-    updateShareUIVisibility();
   }
 
   // src/js/import-export.js
@@ -624,7 +704,6 @@
           stateManager.loadSettings();
           const updateVisibility = () => {
             const sidebar = stateManager.get("ui.sidebar");
-            const shareUI = document.getElementById("yt-pins-share-ui");
             const bar = document.querySelector(".ytp-progress-bar");
             const playerRect = player.getBoundingClientRect();
             const isPlayerVisible = playerRect.bottom > 0 && playerRect.top < window.innerHeight / 2;
@@ -633,14 +712,6 @@
             const shouldShow = isPlayerVisible && userWantsVisible;
             if (sidebar) {
               sidebar.style.setProperty("display", shouldShow ? "block" : "none", "important");
-            }
-            if (shareUI) {
-              const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-              shareUI.style.setProperty(
-                "display",
-                !isFullscreen && shouldShow ? "flex" : "none",
-                "important"
-              );
             }
             if (bar) {
               bar.querySelectorAll(".ytp-pin-label").forEach((label) => {
@@ -673,7 +744,6 @@
             createSidebar();
           }
           renderSidebar();
-          initShareUI();
         } catch (error) {
           console.error("Error in waitForVideo:", error);
           setTimeout(waitForVideo, 100);

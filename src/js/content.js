@@ -1,7 +1,6 @@
 import { stateManager } from './state.js';
 import { createSidebar, destroySidebar, renderSidebar } from './sidebar.js';
 import { renderPins } from './pins.js';
-import { initShareUI } from './share-ui.js';
 import { exportBookmarks, importBookmarks } from './import-export.js';
 
 chrome.runtime.onMessage.addListener(request => {
@@ -63,7 +62,6 @@ function initAll() {
 
         const updateVisibility = () => {
           const sidebar = stateManager.get('ui.sidebar');
-          const shareUI = document.getElementById('yt-pins-share-ui');
           const bar = document.querySelector('.ytp-progress-bar');
 
           const playerRect = player.getBoundingClientRect();
@@ -74,14 +72,6 @@ function initAll() {
 
           if (sidebar) {
             sidebar.style.setProperty('display', shouldShow ? 'block' : 'none', 'important');
-          }
-          if (shareUI) {
-            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-            shareUI.style.setProperty(
-              'display',
-              !isFullscreen && shouldShow ? 'flex' : 'none',
-              'important'
-            );
           }
           if (bar) {
             bar.querySelectorAll('.ytp-pin-label').forEach(label => {
@@ -118,7 +108,6 @@ function initAll() {
           createSidebar();
         }
         renderSidebar();
-        initShareUI();
 
       } catch (error) {
         console.error('Error in waitForVideo:', error);

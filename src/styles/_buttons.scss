@@ -2,24 +2,38 @@
 
 %circle-control-btn {
   position: relative !important;
-  padding: 2px !important;
-  font-size: 18px !important;
+  padding: 0 !important;
+  font-size: 15px !important;
   background: $color-btn-overlay !important;
   color: #fff !important;
-  border: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 50% !important;
   cursor: pointer !important;
   z-index: $z-controls !important;
   pointer-events: auto !important;
-  margin: 0 3px !important;
-  width: 32px !important;
-  height: 32px !important;
+  margin: 0 2px !important;
+  width: 30px !important;
+  height: 30px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  transition: background 0.15s, transform 0.1s, border-color 0.15s !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
 
   &:hover {
     background: $color-btn-overlay-hover !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    transform: scale(1.1) !important;
+  }
+
+  &:active {
+    transform: scale(0.94) !important;
+  }
+
+  svg {
+    width: 15px !important;
+    height: 15px !important;
   }
 }
 
@@ -35,12 +49,11 @@
   position: absolute !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
-  bottom: 4px !important;
+  bottom: 6px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   z-index: $z-controls !important;
   pointer-events: auto !important;
-  gap: 2px !important;
-  margin-bottom: 4px !important;
+  gap: 4px !important;
 }

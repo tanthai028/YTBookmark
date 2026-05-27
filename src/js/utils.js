@@ -4,6 +4,16 @@ export function formatTime(t) {
   return `${m}:${s}`;
 }
 
+export function parseTime(str) {
+  const parts = str.trim().split(':');
+  if (parts.length === 2) {
+    const m = parseInt(parts[0], 10);
+    const s = parseInt(parts[1], 10);
+    if (!isNaN(m) && !isNaN(s) && m >= 0 && s >= 0 && s < 60) return m * 60 + s;
+  }
+  return null;
+}
+
 export function getVideoId() {
   return new URLSearchParams(location.search).get('v');
 }

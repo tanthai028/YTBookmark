@@ -1,20 +1,21 @@
 @use 'variables' as *;
 
 .button-tooltip {
-  position: absolute;
+  position: fixed;
+  z-index: 2147483647;
   background: $color-tooltip;
-  color: white;
-  padding: 6px 8px !important;
-  border-radius: 4px;
-  font-size: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e0e0e8;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transform: translateX(-50%) translateY(5px);
-  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-  z-index: $z-tooltip;
-  bottom: calc(100% + 8px) !important;
-  left: 50%;
+  transform: translateX(-50%);
+  transition: opacity 0.15s ease-out;
+  letter-spacing: 0.02em;
 
   &::after {
     content: '';
@@ -22,20 +23,14 @@
     bottom: -4px;
     left: 50%;
     transform: translateX(-50%) rotate(45deg);
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     background: $color-tooltip;
-  }
-}
-
-.ytp-pin-btn,
-.visibility-btn {
-  .button-tooltip {
-    transform: translateX(-50%) translateY(0);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  &:hover .button-tooltip {
+  &.visible {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
   }
 }

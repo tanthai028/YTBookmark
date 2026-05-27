@@ -2,89 +2,98 @@
 
 #yt-pins-share-ui {
   position: fixed;
-  bottom: 10px;
-  right: 10px;
+  bottom: 16px;
+  right: 16px;
   z-index: $z-ui-base;
-  display: flex;
-  gap: 5px;
-  opacity: 1;
-  transition: opacity 0.3s ease !important;
-
-  &.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  button {
-    padding: 6px 10px;
-    border: none;
-    border-radius: 4px;
-    background: $color-accent;
-    color: white;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
-
-    &:hover {
-      background: $color-accent-hover;
-    }
-  }
 }
 
-// Hide share UI in fullscreen
 *:fullscreen #yt-pins-share-ui,
 *.fullscreen #yt-pins-share-ui {
   display: none !important;
 }
 
-.kofi-circle-btn {
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 50% !important;
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-size: 18px !important;
-  background: $color-accent !important;
-  color: white !important;
-  border: none !important;
-  cursor: pointer !important;
-  transition: background-color 0.2s !important;
-
-  &:hover {
-    background: $color-accent-hover !important;
-  }
-}
-
-.kofi-popup {
-  position: absolute;
-  right: 0;
-  bottom: 100%;
-  background: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  width: 320px;
-  height: 570px;
-  margin-bottom: 10px;
-  z-index: $z-ui-base;
+.kofi-card {
+  position: relative;
+  width: 210px;
+  padding: 14px 16px;
+  background: rgba(11, 11, 14, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(10px);
-  transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0.2s ease-out;
-  overflow: hidden;
+  transform: translateY(6px);
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out, visibility 0.15s;
 
   &.visible {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
   }
+}
 
-  iframe {
-    border: none;
-    width: 100%;
-    height: 100%;
-    border-radius: 8px;
-    pointer-events: auto;
+.kofi-card-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  color: $color-text-muted;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+
+  svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  &:hover {
+    color: $color-text;
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.kofi-card-title {
+  margin: 0 0 3px;
+  padding-right: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #f0f0f4;
+}
+
+.kofi-card-sub {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: $color-text-muted;
+  line-height: 1.4;
+}
+
+.kofi-donate-btn {
+  display: block;
+  text-align: center;
+  padding: 8px 14px;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 8px;
+  color: $color-accent;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: rgba(0, 229, 255, 0.16);
+    border-color: rgba(0, 229, 255, 0.35);
   }
 }
