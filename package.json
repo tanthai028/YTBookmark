@@ -8,7 +8,8 @@
     "build:css": "sass src/styles/main.scss styles.css",
     "watch": "concurrently \"npm run watch:js\" \"npm run watch:css\"",
     "watch:js": "esbuild src/js/content.js --bundle --format=iife --platform=browser --outfile=content.js --watch",
-    "watch:css": "sass --watch src/styles/main.scss:styles.css"
+    "watch:css": "sass --watch src/styles/main.scss:styles.css",
+    "zip": "powershell -Command \"if (Test-Path '../extension-upload.zip') { Remove-Item '../extension-upload.zip' -Force }; Compress-Archive -Path 'manifest.json','background.js','content.js','styles.css','popup.html','popup.css','icon48.png' -DestinationPath '../extension-upload.zip'; Write-Host 'Created: ../extension-upload.zip'\""
   },
   "devDependencies": {
     "concurrently": "^9.0.0",

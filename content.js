@@ -241,14 +241,19 @@
   function flashSidebar(sidebar) {
     clearTimeout(sidebar._flashTimeout);
     sidebar.classList.add("just-shown");
-    sidebar._flashTimeout = setTimeout(() => sidebar.classList.remove("just-shown"), 2500);
+    sidebar._flashTimeout = setTimeout(
+      () => sidebar.classList.remove("just-shown"),
+      2500
+    );
   }
   function renderSidebar() {
     const listContainer = stateManager.get("ui.listContainer");
     const bookmarks = stateManager.get("bookmarks") || [];
     const video = stateManager.get("video");
     if (!listContainer || !document.body.contains(listContainer)) {
-      console.warn("List container not found or not in document, recreating sidebar...");
+      console.warn(
+        "List container not found or not in document, recreating sidebar..."
+      );
       createSidebar();
       return;
     }
@@ -256,6 +261,10 @@
     if (countBadge) {
       countBadge.textContent = bookmarks.length;
       countBadge.style.display = bookmarks.length ? "" : "none";
+    }
+    const searchInput = stateManager.get("ui.searchInput");
+    if (searchInput && searchInput.parentElement) {
+      searchInput.parentElement.style.display = bookmarks.length > 5 ? "" : "none";
     }
     try {
       listContainer.innerHTML = "";
@@ -271,7 +280,6 @@
         listContainer.appendChild(ph);
         return;
       }
-      const searchInput = stateManager.get("ui.searchInput");
       const query = searchInput ? searchInput.value.trim().toLowerCase() : "";
       const sorted = bookmarks.map((bm, i) => ({ bm, index: i })).sort((a, b) => a.bm.time - b.bm.time).filter(({ bm }) => !query || bm.label.toLowerCase().includes(query));
       if (!sorted.length) {
@@ -385,7 +393,9 @@
     const sidebar = document.createElement("div");
     stateManager.set("ui.sidebar", sidebar);
     sidebar.className = "yt-pins-sidebar";
-    const savedPosition = localStorage.getItem(`yt-pins-position-${getVideoId()}`);
+    const savedPosition = localStorage.getItem(
+      `yt-pins-position-${getVideoId()}`
+    );
     if (savedPosition) {
       try {
         const pos = JSON.parse(savedPosition);
@@ -507,8 +517,14 @@
       e.stopPropagation();
       e.preventDefault();
       const isCurrentlyVisible = localStorage.getItem("yt-pins-visibility") !== "hidden";
-      localStorage.setItem("yt-pins-visibility", isCurrentlyVisible ? "hidden" : "visible");
-      localStorage.setItem("yt-pins-label-visibility", isCurrentlyVisible ? "false" : "true");
+      localStorage.setItem(
+        "yt-pins-visibility",
+        isCurrentlyVisible ? "hidden" : "visible"
+      );
+      localStorage.setItem(
+        "yt-pins-label-visibility",
+        isCurrentlyVisible ? "false" : "true"
+      );
       visibilityIcon.innerHTML = isCurrentlyVisible ? ICON_EYE_OFF : ICON_EYE;
       hideTooltip();
       const s = stateManager.get("settings");
@@ -519,26 +535,44 @@
       const shareUI = document.getElementById("yt-pins-share-ui");
       const progressBar = document.querySelector(".ytp-progress-bar");
       if (currentSidebar) {
-        currentSidebar.style.setProperty("display", isCurrentlyVisible ? "none" : "block", "important");
+        currentSidebar.style.setProperty(
+          "display",
+          isCurrentlyVisible ? "none" : "block",
+          "important"
+        );
         if (!isCurrentlyVisible) flashSidebar(currentSidebar);
       }
       if (shareUI) {
         const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
         if (!isFullscreen) {
-          shareUI.style.setProperty("display", isCurrentlyVisible ? "none" : "flex", "important");
+          shareUI.style.setProperty(
+            "display",
+            isCurrentlyVisible ? "none" : "flex",
+            "important"
+          );
         }
       }
       if (progressBar) {
         progressBar.querySelectorAll(".ytp-pin-label").forEach((label) => {
-          label.style.setProperty("visibility", isCurrentlyVisible ? "hidden" : "visible", "important");
+          label.style.setProperty(
+            "visibility",
+            isCurrentlyVisible ? "hidden" : "visible",
+            "important"
+          );
         });
         progressBar.querySelectorAll(".yt-pin").forEach((pin) => {
           if (isCurrentlyVisible) {
             pin.style.setProperty("height", "100%", "important");
           } else {
-            const label = progressBar.querySelector(`.ytp-pin-label[data-pin-id="${pin.dataset.pinId}"]`);
+            const label = progressBar.querySelector(
+              `.ytp-pin-label[data-pin-id="${pin.dataset.pinId}"]`
+            );
             if (label) {
-              pin.style.setProperty("height", `${Math.abs(label.offsetTop) - 12}px`, "important");
+              pin.style.setProperty(
+                "height",
+                `${Math.abs(label.offsetTop) - 12}px`,
+                "important"
+              );
             }
           }
         });
@@ -559,10 +593,13 @@
         sidebar.style.top = ev.clientY - dy + "px";
       };
       const onUp = () => {
-        localStorage.setItem(`yt-pins-position-${getVideoId()}`, JSON.stringify({
-          left: sidebar.style.left,
-          top: sidebar.style.top
-        }));
+        localStorage.setItem(
+          `yt-pins-position-${getVideoId()}`,
+          JSON.stringify({
+            left: sidebar.style.left,
+            top: sidebar.style.top
+          })
+        );
         document.removeEventListener("mousemove", onMove);
         document.removeEventListener("mouseup", onUp);
       };
