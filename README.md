@@ -6,6 +6,8 @@
 
 <br clear="left">
 
+**[➜ Install from the Chrome Web Store](https://chromewebstore.google.com/detail/ytbookmarks/jkiapphfienejigejenmajblkimmclcl)**
+
 <!-- Add a screenshot or GIF here: pins on the progress bar + the bookmark sidebar.
 ![YTBookmarks demo](docs/demo.gif) -->
 
@@ -39,9 +41,11 @@ Finding a specific moment again in a long lecture, tutorial, or stream means scr
 - **esbuild** for bundling
 - Browser `localStorage` for persistence. No backend and no account.
 
-## Install (load unpacked)
+## Install
 
-The built files (`content.js`, `styles.css`) are already in the repo, so you can load it directly:
+**Chrome Web Store (recommended):** [YTBookmarks](https://chromewebstore.google.com/detail/ytbookmarks/jkiapphfienejigejenmajblkimmclcl), then click **Add to Chrome**.
+
+**From source (load unpacked):** The built files (`content.js`, `styles.css`) are already in the repo, so you can load it directly:
 
 1. Clone or download this repo.
 2. Open `chrome://extensions` and turn on **Developer mode**.
