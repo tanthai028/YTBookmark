@@ -68,20 +68,21 @@ The hard part of this project was building UI *inside someone else's app*. I don
 
 **Chrome Web Store (recommended):** [YTBookmarks](https://chromewebstore.google.com/detail/ytbookmarks/jkiapphfienejigejenmajblkimmclcl), then **Add to Chrome**.
 
-**From source:** the built files (`content.js`, `styles.css`) are committed, so you can load it directly:
+**From source:**
 
 1. Clone or download this repo.
-2. Open `chrome://extensions` and turn on **Developer mode**.
-3. Click **Load unpacked** and select the project folder.
-4. Open any YouTube video. The bookmark button appears in the player controls.
+2. Run `npm install` and `npm run build`. The extension is built into `dist/`.
+3. Open `chrome://extensions` and turn on **Developer mode**.
+4. Click **Load unpacked** and select the `dist` folder.
+5. Open any YouTube video. The bookmark button appears in the player controls.
 
 ## Development
 
 ```bash
 npm install
-npm run build   # bundle src/js → content.js and compile src/styles → styles.css
+npm run build   # build the extension into dist/: bundle src/js, compile src/styles, copy static files
 npm run watch   # rebuild on change
-npm run zip     # package the files for a Chrome Web Store upload
+npm run zip     # build, then package dist/ for a Chrome Web Store upload
 ```
 
 After rebuilding, click **Reload** on the extension in `chrome://extensions`.
@@ -91,6 +92,8 @@ After rebuilding, click **Reload** on the extension in `chrome://extensions`.
 ```
 manifest.json            # Extension config (MV3)
 background.js            # Right-click menu: Export / Import
+popup.html, popup.css    # Toolbar popup
+scripts/copy-static.mjs  # Copies static files into dist/
 src/js/
   content.js             # Entry point: page lifecycle, YouTube navigation events
   state.js               # Central state + persistence
@@ -99,7 +102,7 @@ src/js/
   bookmarks.js           # Add / edit / delete / undo
   import-export.js       # JSON export and import
 src/styles/              # SCSS partials
-content.js, styles.css   # Build output loaded by Chrome
+dist/                    # Build output, loaded by Chrome (not committed)
 ```
 
 ## About
