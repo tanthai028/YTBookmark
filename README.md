@@ -8,9 +8,9 @@
 
 **[➜ Live on the Chrome Web Store](https://chromewebstore.google.com/detail/ytbookmarks/jkiapphfienejigejenmajblkimmclcl)** · JavaScript · Chrome Manifest V3 · SCSS · esbuild
 
-![YTBookmarks on a YouTube video: labeled pins stacked on the progress bar and the bookmark sidebar](docs/demo.png)
+![YTBookmarks on the ExileCon 2026 livestream: pins labeled Keynote, Live demo, Trailer and Q&A on the progress bar, and the same four in the bookmark sidebar](docs/exilecon.webp)
 
-*Labeled pins on the progress bar (overlapping labels stack automatically) and the bookmark sidebar.*
+*Labeled pins on the progress bar and the same bookmarks in the sidebar.*
 
 ## Why I built it
 
